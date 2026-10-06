@@ -1,7 +1,13 @@
-const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const http = require('node:http');
-const { createHandler } = require('../../api/backend');
+
+// The image ships no api/ folder (the function runs on Vercel, not in the container), so this only runs in a checkout and in CI.
+const FN = path.join(__dirname, '..', '..', 'api', 'backend.js');
+const present = fs.existsSync(FN);
+const createHandler = present ? require(FN).createHandler : null;
+const test = (name, fn) => require('node:test')(name, { skip: !present }, fn);
 
 // A real HTTP server stands in for the lab server inside the sandbox, so /healthz is answered for real.
 function labServer(up) {
