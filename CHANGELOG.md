@@ -13,7 +13,7 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
   `node-pty` is now an optional dependency, loaded only when a terminal starts.
 
 - **Split hosting.** The pages can live on a serverless host while the shells run on your own Docker server. The lab server takes `LAB_ALLOWED_ORIGINS` (the page origins it answers, with CORS);
-  the pages host takes `LAB_BACKEND_URL`. Setup kit with HTTPS and a guide in `deploy/vps/`. The header chip reads preview, online, cluster or local, depending on the host.
+  the pages host takes `LAB_BACKEND_URL`. Setup kit with HTTPS, a one-command `setup.sh` and an Oracle Cloud Always Free guide in `deploy/vps/`. The header chip reads preview, online, cluster or local, depending on the host.
 
 ### Fixed
 - The progress marker no longer hides behind the active step dot.
