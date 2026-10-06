@@ -52,9 +52,28 @@
     $('invite').hidden = true; $('term').hidden = false; fit.fit();
     startSession();
   });
+  // Sandbox hosting: a Vercel function starts the lab server on demand and says where it is. Ask until it is ready.
+  var sandboxTries = 0;
+  function ensureBackend(done) {
+    if (!DATA.sandbox) return done();
+    if (sandboxTries === 0) term.write('\r\n\x1b[33mStarting the lab server (the first start takes up to a minute)...\x1b[0m\r\n');
+    fetch('/api/backend', { method: 'POST', headers: { 'X-Lab-Token': savedInvite() } })
+      .then(function (r) { return r.json().then(function (b) { return { status: r.status, body: b }; }); })
+      .then(function (r) {
+        if (r.status === 401) { saveInvite(''); return askInvite(true); }
+        if (r.status === 200 && r.body.ready) { API = r.body.url; sandboxTries = 0; setInterval(keepBackendAlive, 4 * 60 * 1000); return done(); }
+        if (++sandboxTries > 60) return busy(r.body.message || 'The lab server did not start.');
+        setTimeout(function () { ensureBackend(done); }, 2500);
+      })
+      .catch(function () { busy('Could not reach the server.'); });
+  }
+  function keepBackendAlive() {
+    fetch('/api/backend', { method: 'POST', headers: { 'X-Lab-Token': savedInvite() } }).catch(function () { /* next tick */ });
+  }
   function startSession() {
     if (DATA.gated && !savedInvite()) return askInvite(false);
     setStatus('', 'starting');
+    if (DATA.sandbox && !API) return ensureBackend(startSession);
     var headers = { 'Content-Type': 'application/json' };
     if (savedInvite()) headers['X-Lab-Token'] = savedInvite();
     fetch(API + '/session', { method: 'POST', headers: headers, body: JSON.stringify({ track: DATA.track, lab: DATA.lab }) })

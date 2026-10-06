@@ -15,6 +15,10 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - **Split hosting.** The pages can live on a serverless host while the shells run on your own Docker server. The lab server takes `LAB_ALLOWED_ORIGINS` (the page origins it answers, with CORS);
   the pages host takes `LAB_BACKEND_URL`. Setup kit with HTTPS, a one-command `setup.sh` and an Oracle Cloud Always Free guide in `deploy/vps/`. The header chip reads preview, online, cluster or local, depending on the host.
 
+- **Everything on Vercel.** With `LAB_SANDBOX=1`, a Vercel function (`api/backend.js`) starts the lab server inside a Vercel Sandbox microVM from our own image, and the lab page connects to it
+  (invite code required). `deploy/vercel/` has the image push script and a setup guide with the plan limits (Hobby: 45-minute runs; Pro for a real class).
+- The image now has 40 learner users (`lab0..lab39`, was 16) so up to 40 learners can share one server.
+
 ### Fixed
 - The progress marker no longer hides behind the active step dot.
 

@@ -71,3 +71,10 @@ test('the header chip says what this host is: preview without a terminal host, o
   assert.equal(loadConfig({}).chip, 'cluster');
   assert.equal(loadConfig({ LAB_PROFILE: 'local' }).chip, 'local');
 });
+
+test('sandbox hosting: LAB_SANDBOX=1 on a host without terminals makes the lab page ask for an invite and look the server up', () => {
+  const c = loadConfig({ VERCEL: '1', LAB_SANDBOX: '1' });
+  assert.deepEqual([c.terminal, c.sandbox, c.chip], [false, true, 'online']);
+  assert.equal(loadConfig({ VERCEL: '1' }).sandbox, false);
+  assert.equal(loadConfig({ LAB_SANDBOX: '1' }).sandbox, false, 'a host that runs shells itself never uses a sandbox');
+});

@@ -22,9 +22,9 @@ RUN sed -i '\|path-exclude /usr/share/man/\*|d' /etc/dpkg/dpkg.cfg.d/docker \
  && apt-get install -y --no-install-recommends --reinstall \
       coreutils bash grep sed findutils gzip tar util-linux diffutils \
  && rm -rf /var/lib/apt/lists/* \
- # One user per concurrent session (lab0..lab15, uid 10000+): learners cannot read,
+ # One user per concurrent session (lab0..lab39, uid 10000+): learners cannot read,
  # signal or starve each other. Names (not bare numbers) so `ls -l` stays readable.
- && for i in $(seq 0 15); do groupadd -g $((10000+i)) lab$i && useradd -M -u $((10000+i)) -g $((10000+i)) -s /bin/bash lab$i; done
+ && for i in $(seq 0 39); do groupadd -g $((10000+i)) lab$i && useradd -M -u $((10000+i)) -g $((10000+i)) -s /bin/bash lab$i; done
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY package.json ./

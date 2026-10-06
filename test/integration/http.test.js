@@ -306,3 +306,13 @@ test('split hosting: a listed page origin gets CORS and can mint a session; othe
     assert.match(html, /"gated":true/);
   } finally { front.stop(); }
 });
+
+test('sandbox hosting: the lab page is told to ask the function for the server, and invites are required', async () => {
+  const app = await start({ terminal: false, sandbox: true });
+  try {
+    const html = (await get(app, '/lab/' + EB.join('/'))).body;
+    assert.match(html, /"sandbox":true/);
+    assert.match(html, /"gated":true/);
+    assert.equal((await mint(app, ...EB)).status, 200, 'a session still works when this host also has shells (the page, not the server, decides to look elsewhere)');
+  } finally { app.stop(); }
+});

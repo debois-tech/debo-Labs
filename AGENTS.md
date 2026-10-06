@@ -50,7 +50,7 @@ docs/       authoring.md knowledge-base.md                                     D
 - A lab page is a seatless shell. Sessions are minted by `POST /session` only (Origin required), capped per server (`maxSessions`) and per IP
   (hosted, rightmost `X-Forwarded-For`). Pending tokens expire in 15 s.
 - Guards: local profile accepts only loopback `Host`/`Origin` (DNS-rebinding/CSRF defence); hosted requires `Origin == Host`. POST and WebSocket must carry an Origin.
-- Every session runs as its **own unprivileged user** (`LAB_UID` base + slot, `lab0..lab15` in the image) in a `0700` home; the command log is private to it;
+- Every session runs as its **own unprivileged user** (`LAB_UID` base + slot, `lab0..lab39` in the image) in a `0700` home; the command log is private to it;
   `labs/**/solutions/` is root-only in the image (checks stay readable because they run as the learner). Cleanup kills the session and every process of its uid.
 - Checks grade state, not clicks. A task needs `checks/<id>.sh` **and** `solutions/<id>.sh`; `node scripts/validate-labs.js` proves each check fails before
   and passes after its solution. See `docs/authoring.md`.

@@ -29,6 +29,8 @@ function loadConfig(env = process.env) {
     isLocal,
     // Preview mode: the pages render but no shells start (serverless hosts cannot run a pty or keep a WebSocket open).
     terminal,
+    // The lab server runs inside a sandbox started on demand (api/backend.js); the lab page asks that function where it is.
+    sandbox: env.LAB_SANDBOX === '1' && !terminal,
     // Split hosting: pages on one host (serverless), shells on another (a Docker server).
     //   LAB_BACKEND_URL      on the pages host: where the lab page sends /session, /ws and /lab/check.
     //   LAB_ALLOWED_ORIGINS  on the lab server: comma-separated page origins allowed to call it (hosted profile only).
@@ -57,12 +59,12 @@ function loadConfig(env = process.env) {
     // learner cannot read, signal or starve another. Undefined = not root / no drop.
     uidBase,
     trustProxy: !isLocal,          // behind the ALB the rightmost X-Forwarded-For is the client
-    chip: isLocal ? 'local' : (!terminal ? (backendUrl ? 'online' : 'preview') : 'cluster'),
+    chip: isLocal ? 'local' : (!terminal ? ((backendUrl || env.LAB_SANDBOX === '1') ? 'online' : 'preview') : 'cluster'),
     remoteFonts: !isLocal,         // the local app renders fully offline
     // Invite tokens: on the hosted profile every lab needs one (the local app never asks).
     // Comma-separated so a cohort's token can be revoked without touching the others.
     accessTokens: isLocal ? [] : String(env.LAB_ACCESS_TOKENS || env.LAB_ACCESS_TOKEN || '').split(',').map((s) => s.trim()).filter(Boolean),
-    ownerNote: isLocal ? 'this container' : (!terminal ? (backendUrl ? 'shared lab server' : 'preview') : 'this replica only'),
+    ownerNote: isLocal ? 'this container' : (!terminal ? ((backendUrl || env.LAB_SANDBOX === '1') ? 'shared lab server' : 'preview') : 'this replica only'),
   };
 }
 

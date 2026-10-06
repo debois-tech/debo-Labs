@@ -91,8 +91,8 @@ The home page lists every track with its labs and your progress; each track page
 
 ## Host it
 
-Locally with Docker (above), on AWS (`deploy/`), or **split**: the pages on a serverless host and the shells on your own Docker server with HTTPS (`deploy/vps/`).
-Serverless hosts cannot run terminals on their own, so without a lab server they show a read-only preview.
+Locally with Docker (above), on AWS (`deploy/`), **on Vercel only**, where the lab server runs in a Vercel Sandbox (`deploy/vercel/`), or **split**: the pages on a serverless host and the shells on your own Docker server with HTTPS (`deploy/vps/`).
+Serverless functions cannot run terminals on their own, so without a lab server they show a read-only preview.
 
 ## How it works
 

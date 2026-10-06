@@ -155,7 +155,7 @@ function createApp(opts = {}) {
 
     if (req.method === 'POST' && p === '/session') {
       if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
-      if (!cfg.terminal && !cfg.backendUrl) return json(res, 501, { error: 'no-terminal', message: 'Live terminals are not available on this host. Run Debo Labs with Docker to try the labs (see the README).' });
+      if (!cfg.terminal && !cfg.backendUrl && !cfg.sandbox) return json(res, 501, { error: 'no-terminal', message: 'Live terminals are not available on this host. Run Debo Labs with Docker to try the labs (see the README).' });
       return readJson(req, res, ({ track, lab }) => {
         const found = findLab(String(track), String(lab));
         if (!found) return json(res, 404, { error: 'unknown lab' });
