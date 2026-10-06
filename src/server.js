@@ -41,7 +41,9 @@ function guardOk(req, cfg, { needOrigin }) {
   if (!origin) return !needOrigin;
   let originHost;
   try { originHost = new URL(origin).host.toLowerCase(); } catch { return false; }
-  return cfg.isLocal ? LOOPBACK.has(hostnameOf(originHost)) : originHost === String(req.headers.host || '').toLowerCase();
+  if (cfg.isLocal) return LOOPBACK.has(hostnameOf(originHost));
+  // hosted: same origin, or a page origin the operator listed (the pages live on another host)
+  return originHost === String(req.headers.host || '').toLowerCase() || (cfg.allowedOrigins || []).includes(new URL(origin).origin);
 }
 
 // Hosted only: every lab needs one of the configured invite tokens (the local app never asks). Compared as
@@ -117,6 +119,15 @@ function createApp(opts = {}) {
     const p = url.pathname;
     let m;
 
+    // Cross-origin calls from a listed page host (split hosting): CORS headers, and the preflight answered here.
+    const origin = req.headers.origin;
+    const corsOk = !!origin && !cfg.isLocal && (cfg.allowedOrigins || []).includes((() => { try { return new URL(origin).origin; } catch { return ''; } })());
+    if (corsOk) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
+    if (req.method === 'OPTIONS') {
+      if (!corsOk) return send(res, 403, 'text/plain', 'forbidden');
+      return send(res, 204, 'text/plain', '', { 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, X-Lab-Token', 'Access-Control-Max-Age': '600' });
+    }
+
     if (req.method === 'GET' && p === '/healthz') return send(res, 200, 'text/plain', 'ok');
     if (req.method === 'GET' && p === '/stats') {
       // sessions/maxSessions let an operator see seat pressure per replica without shell access.
@@ -144,7 +155,7 @@ function createApp(opts = {}) {
 
     if (req.method === 'POST' && p === '/session') {
       if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
-      if (!cfg.terminal) return json(res, 501, { error: 'no-terminal', message: 'Live terminals are not available on this host. Run Debo Labs with Docker to try the labs (see the README).' });
+      if (!cfg.terminal && !cfg.backendUrl) return json(res, 501, { error: 'no-terminal', message: 'Live terminals are not available on this host. Run Debo Labs with Docker to try the labs (see the README).' });
       return readJson(req, res, ({ track, lab }) => {
         const found = findLab(String(track), String(lab));
         if (!found) return json(res, 404, { error: 'unknown lab' });

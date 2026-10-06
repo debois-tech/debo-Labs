@@ -20,3 +20,6 @@ backend_override.tf
 videos/
 __pycache__/
 *.local.md
+
+# Local secrets for the lab server
+.env

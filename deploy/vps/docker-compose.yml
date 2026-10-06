@@ -1,0 +1,40 @@
+# The lab server for split hosting: runs the real shells, with HTTPS in front. Works on any Linux server with Docker.
+#   cp .env.example .env     (fill it in)
+#   docker compose up -d --build
+# The pages (for example on Vercel) call this server; see README.md in this folder.
+services:
+  labs:
+    build: ../..
+    image: debo-labs:server
+    environment:
+      # hosted profile (the default): invite codes, per-IP limits, tight timeouts
+      LAB_ALLOWED_ORIGINS: ${LAB_ALLOWED_ORIGINS:?set the page origin(s), e.g. https://debo-labs.vercel.app}
+      LAB_ACCESS_TOKENS: ${LAB_ACCESS_TOKENS:?set at least one invite code}
+      MAX_SESSIONS: ${MAX_SESSIONS:-8}
+    expose: ["8080"]
+    cpus: ${LAB_CPUS:-2.0}
+    mem_limit: ${LAB_MEMORY:-2g}
+    pids_limit: 1024
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID, KILL, CHOWN, DAC_OVERRIDE]
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /sandbox:size=512m,mode=0755,exec
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    environment:
+      LABS_DOMAIN: ${LABS_DOMAIN:?set the lab server's domain, e.g. labs-api.example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [labs]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:

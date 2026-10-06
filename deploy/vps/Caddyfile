@@ -1,0 +1,4 @@
+# Automatic HTTPS for the domain in LABS_DOMAIN; WebSockets (/ws) pass through unchanged.
+{$LABS_DOMAIN} {
+	reverse_proxy labs:8080
+}

@@ -89,6 +89,11 @@ The home page lists every track with its labs and your progress; each track page
 
 <p align="center"><img src="docs/screenshots/home.png" alt="Debo Labs home page with the track cards" width="900"></p>
 
+## Host it
+
+Locally with Docker (above), on AWS (`deploy/`), or **split**: the pages on a serverless host and the shells on your own Docker server with HTTPS (`deploy/vps/`).
+Serverless hosts cannot run terminals on their own, so without a lab server they show a read-only preview.
+
 ## How it works
 
 ```

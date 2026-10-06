@@ -51,3 +51,23 @@ test('invite tokens: comma-separated on hosted, never read by the local profile'
   assert.deepEqual(loadConfig({ LAB_ACCESS_TOKEN: 'solo' }).accessTokens, ['solo']);
   assert.deepEqual(loadConfig({ LAB_PROFILE: 'local', LAB_ACCESS_TOKENS: 'a' }).accessTokens, []);
 });
+
+test('split hosting: listed page origins pass the hosted guard; the local profile ignores the list; bad entries are dropped', () => {
+  const c = loadConfig({ LAB_ALLOWED_ORIGINS: 'https://labs.example.app/, nope, ftp://x.y, http://localhost:3000' });
+  assert.deepEqual(c.allowedOrigins, ['https://labs.example.app', 'http://localhost:3000']);
+  const g = (origin, cfg = c) => guardOk(req({ host: 'api.example.com', origin }), cfg, { needOrigin: true });
+  assert.ok(g('https://labs.example.app'));
+  assert.ok(g('https://api.example.com'), 'same origin still works');
+  assert.ok(!g('https://labs.example.app.evil.com'));
+  assert.ok(!g('https://other.example.app'));
+  assert.deepEqual(loadConfig({ LAB_PROFILE: 'local', LAB_ALLOWED_ORIGINS: 'https://a.b' }).allowedOrigins, []);
+  assert.equal(loadConfig({ LAB_BACKEND_URL: 'https://api.example.com/x' }).backendUrl, 'https://api.example.com');
+  assert.equal(loadConfig({ LAB_BACKEND_URL: 'javascript:alert(1)' }).backendUrl, '');
+});
+
+test('the header chip says what this host is: preview without a terminal host, online with one, cluster when it runs shells', () => {
+  assert.equal(loadConfig({ VERCEL: '1' }).chip, 'preview');
+  assert.equal(loadConfig({ VERCEL: '1', LAB_BACKEND_URL: 'https://api.example.com' }).chip, 'online');
+  assert.equal(loadConfig({}).chip, 'cluster');
+  assert.equal(loadConfig({ LAB_PROFILE: 'local' }).chip, 'local');
+});

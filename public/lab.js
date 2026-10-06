@@ -30,6 +30,8 @@
   function sendSize() { if (ws && ws.readyState === 1) ws.send('\u0000resize:' + term.cols + ',' + term.rows); }
 
   // --- session: the page shell takes no seat; we ask for one -------------------
+  // Split hosting: the pages come from one host, the shells from another (DATA.backend). Empty = same host.
+  var API = DATA.backend || '';
   var tries = 0;
   var INVITE_KEY = 'debo:invite';
   function savedInvite() { try { return localStorage.getItem(INVITE_KEY) || ''; } catch (e) { return ''; } }
@@ -55,7 +57,7 @@
     setStatus('', 'starting');
     var headers = { 'Content-Type': 'application/json' };
     if (savedInvite()) headers['X-Lab-Token'] = savedInvite();
-    fetch('/session', { method: 'POST', headers: headers, body: JSON.stringify({ track: DATA.track, lab: DATA.lab }) })
+    fetch(API + '/session', { method: 'POST', headers: headers, body: JSON.stringify({ track: DATA.track, lab: DATA.lab }) })
       .then(function (r) { return r.json().then(function (b) { return { status: r.status, body: b }; }); })
       .then(function (r) {
         if (r.status === 200) { token = r.body.token; connect(); pollTimer(); setInterval(pollTimer, 5000); return; }
@@ -74,7 +76,9 @@
   }
   function connect() {
     var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(proto + '//' + location.host + '/ws?token=' + token);
+    var wsHost = API ? new URL(API).host : location.host;
+    if (API) proto = new URL(API).protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(proto + '//' + wsHost + '/ws?token=' + token);
     ws.onopen = function () { setStatus('live', 'live'); sendSize(); term.focus(); render(); };
     ws.onmessage = function (ev) { term.write(ev.data); };
     ws.onclose = function (ev) { setStatus('ended', 'ended'); term.write('\r\n[session ended: ' + (ev.reason || ev.code) + ']\r\n'); };
@@ -131,7 +135,7 @@
     var btn = $('action-btn');
     if (!token) { setHint('The terminal is still starting — try again in a moment.', false); return; }
     btn.textContent = 'Checking…'; btn.disabled = true;
-    fetch('/lab/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token, stepId: s.id }) })
+    fetch(API + '/lab/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token, stepId: s.id }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         btn.disabled = false;
@@ -178,14 +182,14 @@
 
   function pollTimer() {
     if (!token) return;
-    fetch('/session/remaining?token=' + token).then(function (r) { return r.json(); }).then(function (d) {
+    fetch(API + '/session/remaining?token=' + token).then(function (r) { return r.json(); }).then(function (d) {
       var t = d.remainingSec, el = $('lab-timer');
       $('lab-timer-text').textContent = t <= 0 ? '00:00' : String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       el.classList.toggle('is-low', t > 0 && t < 120);
     }).catch(function () { /* transient */ });
   }
   function pollStats() {
-    fetch('/stats').then(function (r) { return r.json(); }).then(function (s) {
+    fetch(API + '/stats').then(function (r) { return r.json(); }).then(function (s) {
       $('stat-cpu').textContent = s.cpuPercent === null ? 'n/a' : s.cpuPercent + '%';
       $('stat-cpu-bar').style.width = (s.cpuPercent === null ? 0 : Math.min(100, s.cpuPercent)) + '%';
       $('stat-mem').textContent = s.memUsedMb + ' / ' + s.memLimitMb + ' MB';

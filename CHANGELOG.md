@@ -12,6 +12,9 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - **Preview mode for serverless hosts** (`api/index.js`, `vercel.json`, or `LAB_TERMINAL=off`). The pages render, but no shells start: a lab shows that live terminals need Docker.
   `node-pty` is now an optional dependency, loaded only when a terminal starts.
 
+- **Split hosting.** The pages can live on a serverless host while the shells run on your own Docker server. The lab server takes `LAB_ALLOWED_ORIGINS` (the page origins it answers, with CORS);
+  the pages host takes `LAB_BACKEND_URL`. Setup kit with HTTPS and a guide in `deploy/vps/`. The header chip reads preview, online, cluster or local, depending on the host.
+
 ### Fixed
 - The progress marker no longer hides behind the active step dot.
 

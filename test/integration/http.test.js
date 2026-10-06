@@ -1,7 +1,7 @@
 // HTTP-level behaviour. No pty needed, so these run anywhere (laptop or CI).
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { start, get, post, mint, check, WebSocket, LABS } = require('./helpers');
+const { start, get, post, request, mint, check, WebSocket, LABS } = require('./helpers');
 const { assertBrandedPage } = require('../assert-branded');
 const { loadCatalog } = require('../../src/loader');
 
@@ -283,4 +283,26 @@ test('preview mode (no terminal host): pages render, and a session request is re
     assert.equal(r.status, 501);
     assert.match(r.body, /not available on this host/);
   } finally { app.stop(); }
+});
+
+test('split hosting: a listed page origin gets CORS and can mint a session; others are refused; the page points at the backend', async () => {
+  const page = 'https://labs.example.app';
+  const app = await start({ allowedOrigins: [page] });
+  try {
+    const pre = await request(app, 'OPTIONS', '/session', { origin: page });
+    assert.equal(pre.status, 204);
+    assert.equal(pre.headers['access-control-allow-origin'], page);
+    assert.match(pre.headers['access-control-allow-headers'], /X-Lab-Token/);
+    assert.equal((await request(app, 'OPTIONS', '/session', { origin: 'https://evil.example' })).status, 403);
+    const ok = await mint(app, ...EB, { origin: page });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.headers['access-control-allow-origin'], page);
+    assert.equal((await mint(app, ...EB, { origin: 'https://evil.example' })).status, 403);
+  } finally { app.stop(); }
+  const front = await start({ terminal: false, backendUrl: 'https://api.example.com' });
+  try {
+    const html = (await get(front, '/lab/' + EB.join('/'))).body;
+    assert.match(html, /"backend":"https:\/\/api\.example\.com"/);
+    assert.match(html, /"gated":true/);
+  } finally { front.stop(); }
 });
