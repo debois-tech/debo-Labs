@@ -279,4 +279,11 @@ if (require.main === module) {
   server.listen(cfg.port, () => console.log(`Debo Labs listening on ${cfg.port}, profile=${cfg.profile}, seats=${cfg.maxSessions}/replica, labs=${cfg.labsDir}`));
 }
 
-module.exports = { createApp, guardOk, hostOk, hostnameOf };
+// A serverless host loads this file and calls the export as a request handler (preview mode, no terminals);
+// the helpers ride along as properties for tests and the other entry points.
+let serverless;
+function handler(req, res) {
+  if (!serverless) serverless = createApp().server;
+  serverless.emit('request', req, res);
+}
+module.exports = Object.assign(handler, { createApp, guardOk, hostOk, hostnameOf });

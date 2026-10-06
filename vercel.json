@@ -1,4 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-  "functions": { "api/index.js": { "includeFiles": "{labs,public,node_modules/@xterm}/**" } }
+  "version": 2,
+  "builds": [
+    { "src": "api/index.js", "use": "@vercel/node", "config": { "includeFiles": ["labs/**", "public/**", "node_modules/@xterm/**"] } }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "/api/index.js" }]
 }
