@@ -1,0 +1,42 @@
+title: Branches and merging
+level: intermediate
+minutes: 12
+summary: Work on a feature in isolation, then merge it back into main.
+steps:
+  - id: why
+    type: lesson
+    title: Branches are cheap parallel timelines
+    body: |
+      A **branch** is a movable pointer to a commit. You can start a feature on its own branch without
+      touching `main`, then **merge** it back when it's ready. A repository called `proj` is waiting in your
+      home directory with one commit on `main`.
+  - id: enter
+    type: task
+    title: Enter the repo
+    body: Move your shell into `proj`.
+    hint: "Try: cd proj"
+  - id: new-branch
+    type: task
+    title: Create and switch to a branch
+    body: Create a branch named `feature` and switch to it in one step (`git switch -c`).
+    hint: "Try: git switch -c feature"
+  - id: commit-on-branch
+    type: task
+    title: Commit on the branch
+    body: Create `feature.txt` with some text, stage it, and commit it - while you are on `feature`.
+    hint: 'Try: echo "new feature" > feature.txt && git add feature.txt && git commit -m "Add feature"'
+  - id: back-to-main
+    type: task
+    title: Go back to main
+    body: Switch back to `main`. Look in the directory - `feature.txt` isn't there. It lives on the other branch.
+    hint: "Try: git switch main"
+  - id: merge
+    type: task
+    title: Merge the feature
+    body: While on `main`, merge `feature` into it.
+    hint: "Try: git merge feature"
+  - id: tidy
+    type: task
+    title: Delete the merged branch
+    body: The work is safely in `main`, so delete the `feature` branch (`git branch -d`).
+    hint: "Try: git branch -d feature"

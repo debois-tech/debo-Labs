@@ -1,0 +1,44 @@
+title: Undoing mistakes
+level: intermediate
+minutes: 12
+summary: Discard edits, unstage files, and revert a bad commit safely.
+steps:
+  - id: three-places
+    type: lesson
+    title: Three places to undo
+    body: |
+      Changes live in three places: the **working tree** (your files), the **index** (what is staged),
+      and **history** (commits). Each has a safe undo:
+
+      - `git restore FILE` throws away unstaged edits
+      - `git restore --staged FILE` unstages without losing the edit
+      - `git revert COMMIT` adds a *new* commit that cancels an old one (safe for shared history)
+
+      Your repo `proj` is a bit of a mess - fix it.
+  - id: enter
+    type: task
+    title: Enter the repo
+    body: Move into `proj`.
+    hint: "Try: cd proj"
+  - id: status
+    type: task
+    title: Survey the damage
+    body: Run `git status` to see the unstaged edit and the staged file.
+    hint: Type git status and press Enter.
+  - id: discard
+    type: task
+    title: Discard a bad edit
+    body: "`notes.txt` has a regretted scribble. Throw the uncommitted change away."
+    hint: "Try: git restore notes.txt"
+  - id: unstage
+    type: task
+    title: Unstage a file
+    body: Unstage `draft.txt` but keep the file itself on disk.
+    hint: "Try: git restore --staged draft.txt"
+  - id: revert
+    type: task
+    title: Revert the bad commit
+    body: |
+      The latest commit ("Add oops") was a mistake. Undo it with a **new** commit instead of rewriting history.
+      Add `--no-edit` to accept the default message without opening an editor.
+    hint: "Try: git revert --no-edit HEAD"

@@ -1,0 +1,22 @@
+node_modules/
+*.log
+
+# Terraform
+.terraform/
+*.tfstate
+tfplan
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+
+# OS/editor
+.DS_Store
+
+# Temporary local-backend override used only while bootstrapping state (see deploy/README.md)
+backend_override.tf
+
+# Local video projects
+videos/
+__pycache__/
+*.local.md

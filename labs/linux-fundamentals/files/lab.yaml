@@ -1,0 +1,43 @@
+title: Creating and managing files
+level: beginner
+minutes: 10
+summary: mkdir, touch, echo, cp, mv and rm - build, copy, rename and delete.
+steps:
+  - id: intro
+    type: lesson
+    title: Files are yours to shape
+    body: |
+      You start with an empty home directory. In this lab you will create a directory, put a file in it,
+      copy and rename it, then delete one. **Careful:** `rm` has no recycle bin - deleted means gone.
+  - id: mkdir
+    type: task
+    title: Make a directory
+    body: Create a directory called `workspace` with `mkdir`.
+    hint: "Try: mkdir workspace"
+  - id: touch
+    type: task
+    title: Create an empty file
+    body: "`touch` creates an empty file (or updates its timestamp). Create `workspace/hello.txt`."
+    hint: "Try: touch workspace/hello.txt"
+  - id: write
+    type: task
+    title: Write into a file
+    body: |
+      `echo` prints text, and `>` redirects that output into a file (replacing its contents).
+      Put the text `hello linux` into `workspace/hello.txt`.
+    hint: 'Try: echo "hello linux" > workspace/hello.txt'
+  - id: cp
+    type: task
+    title: Copy it
+    body: Copy `workspace/hello.txt` to `workspace/backup.txt` with `cp <from> <to>`.
+    hint: "Try: cp workspace/hello.txt workspace/backup.txt"
+  - id: mv
+    type: task
+    title: Rename it
+    body: "`mv` moves *or renames*. Rename `workspace/backup.txt` to `workspace/archive.txt`."
+    hint: "Try: mv workspace/backup.txt workspace/archive.txt"
+  - id: rm
+    type: task
+    title: Delete one
+    body: Remove the original `workspace/hello.txt` with `rm`. The archive copy must survive.
+    hint: "Try: rm workspace/hello.txt"

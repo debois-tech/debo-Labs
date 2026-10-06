@@ -1,0 +1,36 @@
+title: File permissions
+level: beginner
+minutes: 10
+summary: Read ls -l output, make a script executable, and lock a file down with chmod.
+steps:
+  - id: modes
+    type: lesson
+    title: Read, write, execute
+    body: |
+      Every file has permissions for three audiences - **owner**, **group**, **others** - each with
+      **r**ead, **w**rite and e**x**ecute. `ls -l` shows them as `-rw-r--r--`.
+
+      `chmod` changes them: `chmod +x file` adds execute, and `chmod 600 file` sets exact numbers
+      (4 = read, 2 = write, 1 = execute, added together per audience).
+  - id: ls-l
+    type: task
+    title: Look at the permissions
+    body: Run `ls -l` and find `deploy.sh` and `secret.txt` in the listing.
+    hint: Type ls -l and press Enter.
+  - id: make-exec
+    type: task
+    title: Make a script executable
+    body: "`deploy.sh` can't be run directly yet. Give it execute permission."
+    hint: "Try: chmod +x deploy.sh"
+  - id: run-it
+    type: task
+    title: Run it
+    body: Run the script from the current directory. (Paths to programs need a `./` prefix.)
+    hint: "Try: ./deploy.sh"
+  - id: lock-down
+    type: task
+    title: Make a secret private
+    body: |
+      `secret.txt` is readable by everyone. Set its permissions so **only you** can read and write it
+      (numeric mode `600`).
+    hint: "Try: chmod 600 secret.txt"

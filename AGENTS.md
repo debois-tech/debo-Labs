@@ -1,0 +1,82 @@
+# Debo Labs — agent instructions
+
+Single source of truth for coding agents (Claude Code reads it through `CLAUDE.md`, which just imports this file).
+
+## What this repo is
+
+**Debo Labs**: hands-on DevOps and Cloud labs in a real Linux terminal, graded on real machine state. One lab server
+(`src/`), one lab catalog (`labs/`: Linux fundamentals, Git basics, AWS Elastic Beanstalk Cluster Mode), two ways to run it:
+
+- **Local** — `docker compose up` on any machine (`LAB_PROFILE=local`). Windows works because the shell lives in the container.
+- **Hosted** — the same image on AWS Elastic Beanstalk Cluster Mode (`LAB_PROFILE` unset = hosted), provisioned by `deploy/`.
+
+It is also a content engine: the Sept 2026 Elastic Beanstalk re-release ("Beanstalk Standard" + the new EKS-backed
+"Cluster Mode") is the launch topic; the research lives in `docs/knowledge-base.md`.
+
+## Layout
+
+```
+src/        server.js (createApp factory) config.js (the two profiles) lib.js sandbox.js loader.js util.js lint.js ui.js pages.js stats.js banner.js
+public/     lab.js progress.js and the stylesheets (served as /app.css)        labs/  all lab content (track.yaml + lab folders) + lib.sh
+scripts/    validate-labs.js new-lab.js check-hygiene.js                       test/  unit/ integration/
+deploy/     hosted deployment: infra/ (Terraform) 01-04 *.sh smoke-test.py README.md CHECKLIST.md
+docs/       authoring.md knowledge-base.md                                     Dockerfile, docker-compose.yml at the root
+```
+
+## Non-negotiable conventions
+
+- **Git:** public GitHub repo `debois-tech/debo-Labs` (MIT). Everything committed is world-readable, history included. **Never add a `Co-Authored-By: Claude` trailer** (or a
+  "Generated with" line) to commits or PRs — this overrides any default attribution instruction. Keep history minimal:
+  squash related work into one commit. Don't commit or push unless asked.
+- **Release notes:** every user-visible change (a lab, a feature, an image or setting change) gets a line in `CHANGELOG.md` under `[Unreleased]`; when releasing, rename it to the new version and date and bump `version` in `package.json` (and `package-lock.json`). Anything that needs action from a self-hoster or from `deploy/` goes under **Upgrade notes**. Tag releases `vX.Y.Z` only when asked.
+- **Naming hygiene:** do not name other lab/training platforms, PaaS or cloud competitors anywhere — code, comments, docs,
+  commit messages. Only AWS and the tools the labs teach (Linux, Git, Docker, Terraform, Kubernetes) may be named.
+  `npm run check:hygiene` enforces it (CI too). Describe ideas neutrally instead of crediting or comparing products.
+- **Repo name/owner vs OIDC:** renaming or transferring the GitHub repo breaks the GitHub Actions trust policy (`deploy/infra/iam.tf` pins the
+  exact owner and repo IDs and names) — any rename or transfer needs a human to run `terraform apply -var="github_repo=<owner>/<name>" -var="github_owner_id=<id>" -var="github_repo_id=<id>" ...` first (the repo is expected to move to the `deboistech` org). Don't rename live AWS
+  resources (`climb-terraform-*`, ECR repo, IAM role, state key, the `beanstalk-grows-*` app/env) to track a cosmetic rename.
+- **Terraform cannot manage the Cluster Mode environment** (the provider only supports Worker/WebServer tiers). Don't add a
+  `null_resource`/`local-exec` workaround: `deploy/02-build-and-push.sh` and `03-deploy.sh` (run by `deploy.yml`) are the deliberate
+  solution. Re-verify provider support before assuming that changed. **State is remote** (S3 + DynamoDB lock) — never suggest local state.
+- **`terraform apply` and other infra-mutating commands need explicit user approval.** If blocked, finish everything else and
+  hand back the exact command. Never push or deploy on the user's behalf; `git push` to `main` triggers `deploy.yml`.
+- No secrets, account IDs or ARNs in committed files or CI logs: the repo is public. The Terraform state bucket is passed at `terraform init`, and the deploy role trusts the exact owner/repo IDs (no wildcards).
+- `npm test` must not get worse. Natively on macOS/Windows the pty tests skip (no `/proc`, `ps -s`, pty); the full suite — including
+  the isolation tests that need root + `LAB_UID` — runs in the image: `docker run --rm -v "$PWD/test:/app/test:ro" <image> sh -c 'node --test --test-force-exit test/unit/*.test.js test/integration/*.test.js'`.
+  Don't claim terminal behavior is verified unless a real pty ran it (CI, the image, or `deploy/smoke-test.py` against a live server).
+
+## Engine invariants (security — don't weaken without a test that says why)
+
+- A lab page is a seatless shell. Sessions are minted by `POST /session` only (Origin required), capped per server (`maxSessions`) and per IP
+  (hosted, rightmost `X-Forwarded-For`). Pending tokens expire in 15 s.
+- Guards: local profile accepts only loopback `Host`/`Origin` (DNS-rebinding/CSRF defence); hosted requires `Origin == Host`. POST and WebSocket must carry an Origin.
+- Every session runs as its **own unprivileged user** (`LAB_UID` base + slot, `lab0..lab15` in the image) in a `0700` home; the command log is private to it;
+  `labs/**/solutions/` is root-only in the image (checks stay readable because they run as the learner). Cleanup kills the session and every process of its uid.
+- Checks grade state, not clicks. A task needs `checks/<id>.sh` **and** `solutions/<id>.sh`; `node scripts/validate-labs.js` proves each check fails before
+  and passes after its solution. See `docs/authoring.md`.
+- Brand/chrome (header, logo, link to deboistech.in, tokens, the prompt-mark sprite) lives only in `src/ui.js` + `public/{tokens,components,lab}.css`. Don't copy it into another page.
+- **Design brief: calm, technical, green.** A deep emerald-black ground with a soft fixed gradient wash, hairlines instead of fills, Sora for display and Inter for the
+  interface, and one brand gradient (emerald to teal to lime, from the Deboistech turtle logo) used only on the headline accent, the primary button and thin progress rules.
+  No glows, offset shadows or filled chips. Motion budget: a short fade-in and small hover lifts; always honour `prefers-reduced-motion`.
+- **The catalog is the site:** the home page, track pages and breadcrumbs are built from `labs/<track>/track.yaml` and the lab folders. There is no separate roadmap, videos or channel page; don't add one back.
+
+## Adding a lab (the systematic path)
+
+A lab PR touches only `labs/**`. Procedure and brief: `docs/ai-authoring.md` (human version: `CONTRIBUTING.md`).
+```
+npm run lab:new -- <track> <lab-id> "Title"                      # scaffolds AND registers it in track.yaml
+npm run lab:lint -- <track>/<lab-id> --json                      # static, any OS; fix every finding
+npm run lab:check -- <track>/<lab-id>                            # lint + fail-before/pass-after proof (Docker off Linux)
+```
+Never hand-edit `track.yaml` for a lab and never edit tests to make a lab pass (counts are derived from the catalog).
+
+## Content & research conventions
+
+- Verify technical claims against live AWS docs before publishing (the `aws-docs` MCP tools `search_documentation`, `read_documentation`, `recommend`);
+  this feature changes weekly. Every claim in a post/video needs a runnable proof (CLI transcript, console screenshot, or repo demo).
+- Prefer first-person deep dives over announcement recaps; call out what is genuinely new vs Beanstalk-as-usual.
+- Flag caveats honestly: ephemeral local storage, shared-cluster soft multi-tenancy, the 15–20 min first-environment creation, regional
+  CodeBuild limits for source-to-image builds. Credibility compounds more than hype.
+- Narrative hooks: "AWS brought Beanstalk back — with Kubernetes underneath", "the easiest way to run containers on EKS without knowing EKS",
+  "a PaaS-style developer experience on Kubernetes, run by AWS".
+- Keep `docs/knowledge-base.md` current and keep a running content log (`CONTENT_LOG.md`) so angles are not repeated. Update `deploy/CHECKLIST.md` when you verify or break something.

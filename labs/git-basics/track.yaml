@@ -1,0 +1,7 @@
+order: 2
+title: Git Basics
+description: Record history, work on branches, merge, and undo mistakes - using the real git CLI.
+labs:
+  - first-commit
+  - branches-and-merge
+  - undoing

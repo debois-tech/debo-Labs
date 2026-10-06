@@ -1,0 +1,61 @@
+title: Shell scripting basics
+level: intermediate
+minutes: 15
+summary: Turn commands into reusable scripts - variables, arguments, if and for.
+steps:
+  - id: what-is-a-script
+    type: lesson
+    title: A script is just commands in a file
+    body: |
+      A **shell script** is a text file of commands that bash runs top to bottom. Two things make it a script:
+
+      - a first line called the **shebang**, `#!/bin/bash`, saying which program runs the file
+      - the **execute permission**, added with `chmod +x`
+
+      You can write files with `nano script.sh` (save with Ctrl+O then Enter, quit with Ctrl+X), or in one line with `printf`.
+      Every task below asks for a script in your home directory; the check **runs your script** and compares what it prints.
+  - id: hello
+    type: task
+    title: Your first script
+    body: |
+      Create `hello.sh` so it prints exactly `Hello, World!`, then make it executable. Start the file with the shebang line.
+
+      ```
+      printf '#!/bin/bash\necho "Hello, World!"\n' > hello.sh
+      chmod +x hello.sh
+      ./hello.sh
+      ```
+    hint: "The first line must be #!/bin/bash, the file must be executable (chmod +x hello.sh), and it must print exactly: Hello, World!"
+  - id: variables
+    type: task
+    title: Variables
+    body: |
+      A variable is set with `NAME=value` (no spaces around `=`) and read with `$NAME`.
+      Create `vars.sh` that stores a name in a variable and prints `Welcome, <name>!` using that variable.
+    hint: 'Use a variable assignment like NAME=Ada and print it with echo "Welcome, $NAME!"'
+  - id: arguments
+    type: task
+    title: Arguments
+    body: |
+      Whatever you type after the script name arrives as `$1`, `$2`, ... Create `greet.sh` that prints `Hello, <first argument>!`
+      so that `./greet.sh Ada` prints `Hello, Ada!`. It will be tested with more than one name.
+    hint: 'Use $1 inside the echo: echo "Hello, $1!"'
+  - id: conditionals
+    type: task
+    title: Making decisions with if
+    body: |
+      `if [ -e "$1" ]; then ... else ... fi` tests whether a path exists. Create `exists.sh` that prints `exists` if the file named
+      by its first argument exists, and `missing` if it does not.
+    hint: 'if [ -e "$1" ]; then echo exists; else echo missing; fi  (inside your script)'
+  - id: loops
+    type: task
+    title: Repeating with for
+    body: |
+      `for i in 3 2 1; do ...; done` repeats a block. Create `countdown.sh` that prints `3`, `2`, `1` on separate lines and then `Liftoff!`.
+    hint: 'for i in 3 2 1; do echo $i; done  and then echo Liftoff!'
+  - id: next
+    type: lesson
+    title: Where to go next
+    body: |
+      You now have the four building blocks of almost every script: **variables**, **arguments**, **conditions** and **loops**.
+      Next steps: read a script's exit status with `$?`, combine commands with `&&` and `||`, and use `set -e` so a script stops on the first error.

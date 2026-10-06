@@ -1,0 +1,1 @@
+echo "Jack" > ~/mark.txt

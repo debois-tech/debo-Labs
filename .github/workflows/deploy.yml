@@ -1,0 +1,91 @@
+name: Deploy
+
+# Push-based CI/CD, not pull-based GitOps: this project's compute (Elastic
+# Beanstalk Cluster Mode) gives the application no Kubernetes API access, so
+# nothing can run *inside* the cluster to reconcile against git the way an
+# Argo CD/Flux controller would. Git is still the single source of truth -
+# merging to main is the only path to production - this workflow is just how
+# that gets enforced here.
+
+on:
+  push:
+    branches: [main]
+
+# Deploys queue instead of colliding: a second merge while the environment is still updating would fail with "must be Ready".
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # required for OIDC -> AWS role assumption
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # No `environment:` here deliberately: declaring one changes the OIDC
+    # token's `sub` claim to `repo:...:environment:<name>` instead of
+    # `repo:...:ref:refs/heads/main`, which the deploy role's trust policy
+    # doesn't match - this broke the very first real run of this pipeline.
+    defaults:
+      run:
+        working-directory: deploy
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Terraform owns durable foundational infra (IAM roles, ECR repo,
+      # budget, this very OIDC role) - not the Beanstalk Cluster Mode
+      # application/environment itself, which the AWS provider doesn't yet
+      # support (see infra/README or the project's own docs/knowledge-base.md).
+      - uses: hashicorp/setup-terraform@v4
+      - name: Terraform apply (foundational infra only)
+        working-directory: deploy/infra
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "::add-mask::$ACCOUNT_ID"   # this repo is public: keep the account ID out of the logs
+          terraform init -backend-config="bucket=climb-terraform-state-$ACCOUNT_ID"
+          terraform apply -auto-approve \
+            -var="github_repo=${{ github.repository }}" \
+            -var="github_owner_id=${{ github.repository_owner_id }}" \
+            -var="github_repo_id=${{ github.repository_id }}" \
+            -var="budget_notification_email=${{ vars.BUDGET_NOTIFICATION_EMAIL }}"
+
+      - uses: docker/setup-buildx-action@v4
+      - name: Build and push image
+        run: ./02-build-and-push.sh
+
+      - name: Deploy to Elastic Beanstalk Cluster Mode
+        env:
+          LAB_ACCESS_TOKENS: ${{ secrets.LAB_ACCESS_TOKENS }}
+        run: ./03-deploy.sh
+
+      - name: Wait for environment to be Ready
+        run: |
+          # A first-ever Cluster Mode environment takes 15-20 minutes (EKS cluster); later updates are quick.
+          for i in $(seq 1 90); do
+            status=$(aws elasticbeanstalk describe-environments \
+              --environment-names beanstalk-grows-env \
+              --query 'Environments[0].Status' --output text)
+            [ "$status" = "Ready" ] && exit 0
+            sleep 20
+          done
+          echo "Environment did not reach Ready in time" >&2
+          exit 1
+
+      - name: Smoke test
+        env:
+          LAB_ACCESS_TOKEN: ${{ secrets.LAB_ACCESS_TOKENS }}
+        run: |
+          pip install websockets
+          # The environment's hostname is looked up, not configured: a rebuilt environment
+          # gets a new random hostname, and a stale repo variable would smoke-test the wrong URL.
+          HOST=$(aws elasticbeanstalk describe-environments \
+            --environment-names beanstalk-grows-env \
+            --query 'Environments[0].CNAME' --output text)
+          echo "Smoke testing https://$HOST"
+          python3 smoke-test.py "$HOST"

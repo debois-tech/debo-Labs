@@ -1,0 +1,10 @@
+order: 1
+title: Linux Fundamentals
+description: Find your way around a Linux shell, manage files, understand permissions, and chain commands together.
+labs:
+  - navigating
+  - files
+  - permissions
+  - pipes-and-search
+  - shell-scripting-basics
+  - linux-in-action

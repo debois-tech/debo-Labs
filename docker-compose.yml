@@ -1,0 +1,30 @@
+# Run Debo Labs on your own machine (Windows, macOS or Linux) - no account needed.
+#
+#   docker compose up --build        then open http://localhost:8080
+#
+# The labs hand you a real Linux shell, so they live in a container. That is also
+# what makes them work the same on Windows: the shell is Linux inside the container.
+services:
+  labs:
+    build: .
+    image: debo-labs:dev
+    ports:
+      # Localhost only. This is a real shell - never expose it to your network.
+      - "127.0.0.1:${LABS_PORT:-8080}:8080"
+    environment:
+      LAB_PROFILE: local       # loopback-only guard, relaxed limits, offline fonts
+      LABS_WATCH: "1"          # re-read labs/ on every page load: edit YAML, refresh, see it
+    volumes:
+      - ./labs:/app/labs:ro    # contributors: edit ./labs on your host, no rebuild needed
+    cpus: 1.0
+    mem_limit: 512m
+    pids_limit: 512
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID, KILL, CHOWN, DAC_OVERRIDE]   # drop shells to per-session users, chown their homes, clean up
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /sandbox:size=128m,mode=0755,exec    # learners' homes; 'exec' so ./script.sh works (docker tmpfs is noexec by default)
+    restart: unless-stopped

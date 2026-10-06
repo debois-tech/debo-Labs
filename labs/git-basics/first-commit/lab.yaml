@@ -1,0 +1,50 @@
+title: Your first commit
+level: beginner
+minutes: 10
+summary: init, add, commit and log - the core Git loop.
+steps:
+  - id: idea
+    type: lesson
+    title: Git records snapshots
+    body: |
+      Git stores your project's history as **commits** - snapshots you choose to take.
+      The loop is: edit files, **stage** what belongs together with `git add`, then **commit** with a message.
+      Your name and email are already configured for this sandbox.
+  - id: init
+    type: task
+    title: Create a repository
+    body: "`git init` turns a directory into a repository. Create one called `myrepo`."
+    hint: "Try: git init myrepo"
+  - id: enter
+    type: task
+    title: Step inside
+    body: Move your shell into `myrepo`.
+    hint: "Try: cd myrepo"
+  - id: readme
+    type: task
+    title: Add a file
+    body: Create a `README.md` containing any text you like (for example with `echo`).
+    hint: 'Try: echo "# My project" > README.md'
+  - id: stage
+    type: task
+    title: Stage it
+    body: |
+      Tell Git you want `README.md` in the next commit. (`git status` shows you what is staged and what isn't.)
+    hint: "Try: git add README.md"
+  - id: commit
+    type: task
+    title: Commit
+    body: Take the snapshot, with a message that says what and why.
+    hint: 'Try: git commit -m "Add README"'
+  - id: second
+    type: task
+    title: Make a second commit
+    body: |
+      Change `README.md` (append a line with `>>`), then commit again. Two commits make a history.
+      Tip: `git commit -am "message"` stages changes to already-tracked files for you.
+    hint: 'Try: echo "More text" >> README.md  then  git commit -am "Update README"'
+  - id: log
+    type: task
+    title: Read the history
+    body: Show your commits with `git log` (add `--oneline` for a compact view).
+    hint: Type git log and press Enter. Press q to leave the pager.

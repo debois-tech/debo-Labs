@@ -1,0 +1,42 @@
+title: Pipes, redirects and search
+level: intermediate
+minutes: 15
+summary: Chain small tools together with | and > to answer questions about logs and code.
+steps:
+  - id: philosophy
+    type: lesson
+    title: Small tools, joined together
+    body: |
+      Linux tools each do one thing. You combine them:
+
+      - `>` sends a command's output into a file (replacing it)
+      - `|` (pipe) feeds one command's output into the next command's input
+      - `grep PATTERN file` prints matching lines, `wc -l` counts lines, `find` locates files
+
+      You have an `app.log` and a small `src/` tree to investigate.
+  - id: errors-file
+    type: task
+    title: Collect the errors
+    body: Use `grep` to pull every `ERROR` line out of `app.log` and save them to `errors.txt`.
+    hint: "Try: grep ERROR app.log > errors.txt"
+  - id: count
+    type: task
+    title: Count them with a pipe
+    body: |
+      How many `ERROR` lines are there? Pipe `grep`'s output into `wc -l`, and redirect the
+      result into `count.txt`.
+    hint: "Try: grep ERROR app.log | wc -l > count.txt"
+  - id: find-py
+    type: task
+    title: Find files by name
+    body: |
+      `find` walks a directory tree. List every Python file (`*.py`) under the current directory
+      into `py-files.txt`. Quote the pattern so the shell doesn't expand it first.
+    hint: 'Try: find . -name "*.py" > py-files.txt'
+  - id: todos
+    type: task
+    title: Search inside files
+    body: |
+      `grep -r` searches a whole directory. Find every `TODO` under `src` and save the matching lines
+      (add `-n` for line numbers) to `todos.txt`.
+    hint: "Try: grep -rn TODO src > todos.txt"

@@ -1,0 +1,116 @@
+title: Elastic Beanstalk Cluster Mode
+level: intermediate
+minutes: 15
+summary: "Explore a Cluster Mode replica: limits, ephemeral disk and autoscaling."
+links:
+  - title: EB Cluster Mode Docs
+    url: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/beanstalk-cluster.html
+resources:
+  - title: "Cluster Mode: Deploy web apps on EKS"
+    url: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/beanstalk-cluster.html
+    desc: The official deep-dive on how Cluster Mode places your app on an EKS Auto Mode cluster.
+  - title: What Is AWS Elastic Beanstalk
+    url: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html
+    desc: The core concepts guide - environments, application versions, and the platform model.
+  - title: AWS News Blog
+    url: https://aws.amazon.com/blogs/aws/
+    desc: Search "Elastic Beanstalk" for the Cluster Mode launch post and follow-up deep dives.
+  - title: EKS Auto Mode
+    url: https://docs.aws.amazon.com/eks/latest/userguide/automode.html
+    desc: The underlying compute and networking layer Cluster Mode runs your containers on.
+  - title: Elastic Beanstalk pricing
+    url: https://aws.amazon.com/elasticbeanstalk/pricing/
+    desc: Beanstalk itself is free - you pay only for the underlying EKS, EC2 and load balancer resources.
+steps:
+  - id: what-is-eb
+    type: lesson
+    title: What is Elastic Beanstalk?
+    body: |
+      Give AWS your code or a container. It runs it. Since 2011 on EC2 (**Standard**) — since Sept 2026,
+      on **Cluster Mode** — your same app, on a managed Amazon EKS cluster instead.
+  - id: what-is-cluster-mode
+    type: lesson
+    title: What is Cluster Mode?
+    body: |
+      This terminal is **inside** a Cluster Mode replica, right now. No server was provisioned by hand.
+      Beanstalk built the cluster, scheduled this container, and put a load balancer in front — you're
+      about to poke at all of it.
+    local_body: |
+      This terminal is inside a container on **your** machine — the same image that runs in a Cluster Mode
+      replica in production. There's no cluster here, but the things you'll poke at (limits, ephemeral disk,
+      process isolation) behave the same.
+  - id: hostname
+    type: task
+    title: Find your sandbox
+    body: Run `hostname`. Every visitor gets a different one.
+    local_body: Run `hostname`. That's your container's ID.
+    hint: Type hostname in the terminal and press Enter.
+  - id: container-vs-node
+    type: task
+    title: Container, meet node
+    body: |
+      Run `cat /etc/os-release` (this container's userland), then `uname -r` (the kernel). Containers share
+      their **node's** kernel — in Cluster Mode, EKS Auto Mode picks and manages that node for you.
+    local_body: |
+      Run `cat /etc/os-release` (this container's userland), then `uname -r` (the kernel). Containers share
+      their **host's** kernel — on Windows and macOS that's the Linux VM Docker Desktop runs. In Cluster Mode
+      it's a node EKS Auto Mode manages.
+    hint: "Run both commands: cat /etc/os-release and uname -r."
+  - id: limits
+    type: task
+    title: Read your limits
+    body: |
+      Run `cat /sys/fs/cgroup/memory.max` and `cat /sys/fs/cgroup/cpu.max`. These are the ceilings Linux
+      enforces on this container — the stats panel below reads the same files. A replica's `cpu` and
+      `memory` options are what it reserves; autoscaling is measured against them.
+    hint: "Run both: cat /sys/fs/cgroup/memory.max and cat /sys/fs/cgroup/cpu.max."
+  - id: mark
+    type: task
+    title: Leave a mark
+    body: |
+      Leave a file behind in your home directory:
+
+      ```
+      echo "Jack" > ~/mark.txt
+      ```
+    hint: The file must exist and be non-empty - copy the command exactly.
+  - id: ephemeral
+    type: lesson
+    title: Where did it go?
+    body: |
+      That file lives on this replica's **local disk**. When the replica is replaced — a deploy, a scale-in,
+      a node refresh — it's gone and the new one starts empty. Cluster Mode has no persistent local storage:
+      keep state in S3, RDS, DynamoDB or EFS.
+    local_body: |
+      That file lives on this container's **local disk**. Restart the container and it's gone. Cluster Mode
+      replicas behave the same way when replaced (a deploy, a scale-in): keep state in S3, RDS, DynamoDB or EFS.
+  - id: scale
+    type: task
+    title: Make it grow
+    body: |
+      Run `yes > /dev/null &` — watch CPU climb below. Autoscaling targets a percentage of the CPU each
+      replica reserves, so sustained load adds replicas. To watch it, open the environment in the Elastic
+      Beanstalk console → Monitoring → **Application replica count**.
+    local_body: |
+      Run `yes > /dev/null &` — watch CPU climb below. In Cluster Mode, sustained load like this adds
+      replicas; locally there is one container, so you only see the CPU.
+    hint: Start it with yes > /dev/null & and leave it running, then Check.
+  - id: cleanup
+    type: task
+    title: Clean up like a pro
+    body: Run `ps aux | grep yes`, then `kill` the PID. Watch CPU fall back down.
+    hint: Start yes in the previous step, then kill its PID (find it with ps aux).
+  - id: ship-and-watch
+    type: lesson
+    title: Ship it, watch it
+    body: |
+      Deployments are **rolling** by default — new replicas come up before old ones go — or **Recreate** for
+      apps that can't run two versions at once. Metrics and logs flow to CloudWatch with no code changes;
+      traces and third-party OpenTelemetry backends are opt-in.
+  - id: the-catches
+    type: lesson
+    title: The honest catches
+    body: |
+      Replicas must be stateless and interchangeable. The first environment takes 15–20 minutes to create.
+      Health is environment-level, not per replica. Beanstalk itself is free, but you pay for the EKS cluster,
+      compute and load balancer under it — and CloudWatch log groups have no retention set by default.

@@ -1,0 +1,76 @@
+title: Linux in Action
+level: beginner
+minutes: 12
+summary: Prepare a project workspace - organize folders, secure keys, check logs, and run a script.
+steps:
+  - id: welcome
+    type: lesson
+    title: Welcome to the project
+    body: |
+      You just cloned an application repository to your machine.
+
+      Before running the service, you need to prepare the workspace:
+      set up the directory structure, copy the configuration file,
+      protect sensitive credentials, check the existing logs, and
+      make sure the startup script can run.
+
+      Everything in this lab uses the everyday commands you already
+      learned: `mkdir`, `cp`, `chmod`, `grep`, and `./`.
+
+  - id: organize
+    type: task
+    title: Organize the workspace
+    body: |
+      The application needs a `logs` directory to store its runtime logs,
+      and it expects its configuration file to be called `config.env`.
+
+      1. Create a directory named `logs`.
+      2. Copy `config.sample` to `config.env`.
+    hint: "Use: mkdir logs && cp config.sample config.env"
+
+  - id: secure-key
+    type: task
+    title: Secure the API key
+    body: |
+      The file `api.key` holds a private token, but it was saved with
+      mode `644` (readable by everyone).
+
+      Lock it down so **only you** (the owner) can read and write it
+      (numeric mode `600`).
+    hint: "Use: chmod 600 api.key"
+
+  - id: recent-log
+    type: task
+    title: Read the latest log lines
+    body: |
+      Before launching, look at what the service did most recently:
+      the newest entries are at the **end** of `service.log`.
+
+      Save the last 3 lines of `service.log` into a new file called
+      `recent.txt`.
+    hint: "Try: tail -n 3 service.log > recent.txt"
+
+  - id: start-app
+    type: task
+    title: Run the startup script
+    body: |
+      The startup script `start.sh` is ready, but it doesn't have execute
+      permission yet.
+
+      1. Give `start.sh` execute permission.
+      2. Run the script directly from your home directory (`./start.sh`).
+    hint: "Make it executable with chmod +x start.sh, then run it with ./start.sh"
+
+  - id: wrap-up
+    type: lesson
+    title: Workspace ready!
+    body: |
+      **Great work!** In just a few minutes, you:
+
+      - Created directories and managed project configuration files
+      - Protected private credentials with numeric permissions
+      - Pulled the latest lines out of a log with `tail` and redirection
+      - Made a script executable and verified it runs cleanly
+
+      These are the exact foundational tasks DevOps and cloud engineers
+      perform every single day in Linux.

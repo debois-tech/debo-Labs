@@ -1,0 +1,9 @@
+# Lab scripts run inside a Linux container: a Windows checkout must never turn them into CRLF.
+* text=auto
+*.sh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+Dockerfile text eol=lf

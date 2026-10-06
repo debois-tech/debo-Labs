@@ -1,0 +1,22 @@
+name: Lab idea
+description: Suggest a lab (or offer to write one)
+labels: [lab-idea]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      placeholder: Docker volumes, cron, ssh keys...
+    validations: { required: true }
+  - type: textarea
+    id: outcome
+    attributes:
+      label: After this lab, a learner can...
+      description: One concept, 5-15 minutes, graded on real state in the sandbox.
+    validations: { required: true }
+  - type: checkboxes
+    id: writing
+    attributes:
+      label: Do you want to write it?
+      options:
+        - label: Yes, I'll open a PR (see CONTRIBUTING.md)

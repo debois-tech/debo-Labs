@@ -1,0 +1,35 @@
+/* Debo Labs design tokens + page ground. Direction: calm and technical. A deep emerald-black ground with a soft green gradient wash,
+   hairline rules, one brand gradient (emerald to teal to lime) used for a few accents, a geometric sans for display and Inter for the interface. */
+:root {
+  --bg: #04100c; --panel: #071a13; --panel2: #0a2219;
+  --text: #e9f5ef; --muted: #8fa89c; --faint: #5d7569;
+  --rule: rgba(160, 255, 210, .09); --rule2: rgba(160, 255, 210, .2);
+  --brand: #10b981; --brand2: #2dd4bf; --brand3: #a3e635;
+  --grad: linear-gradient(100deg, #34d399 0%, #2dd4bf 55%, #a3e635 100%);
+  --warn: #fbbf24; --ok: #4ade80; --bad: #f87171;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --display: 'Sora', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --topbar-h: 64px;
+  --c: var(--brand);
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+html, body { margin: 0; min-height: 100%; color: var(--text); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+/* the gradient wash: two soft green lights over the dark ground, fixed so it does not scroll with the page */
+body {
+  background:
+    radial-gradient(900px 520px at 88% -8%, rgba(16, 185, 129, .17), transparent 62%),
+    radial-gradient(760px 480px at -6% 34%, rgba(45, 212, 191, .09), transparent 60%),
+    radial-gradient(700px 400px at 70% 105%, rgba(163, 230, 53, .06), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+a { color: inherit; text-decoration-color: var(--rule2); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+::selection { background: rgba(16, 185, 129, .4); }
+code, pre, .mono { font-family: var(--mono); }
+code { background: rgba(160, 255, 210, .08); padding: 1px 6px; border-radius: 4px; font-size: .9em; }
+pre { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; overflow: auto; }
+pre code { background: none; padding: 0; }
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.025em; }

@@ -1,0 +1,7 @@
+order: 4
+title: Docker
+description: See what a container really is, write a clean Dockerfile, and understand image layers and Compose.
+labs:
+  - containers-are-processes
+  - dockerfile-craft
+  - layers-and-compose

@@ -1,0 +1,5 @@
+# A push to main deploys to production, so the deploy surface has explicit owners.
+*             @debois-tech
+/deploy/      @debois-tech
+/.github/     @debois-tech
+/src/         @debois-tech

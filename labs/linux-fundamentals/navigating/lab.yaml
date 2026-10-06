@@ -1,0 +1,45 @@
+title: Navigating the filesystem
+level: beginner
+minutes: 8
+summary: pwd, ls, cd and cat - how to move around and look at things.
+steps:
+  - id: the-tree
+    type: lesson
+    title: Everything lives in one tree
+    body: |
+      Linux has a single tree of directories starting at `/` (the root). Your **home directory**
+      is where you start, and `~` is a shortcut for it.
+
+      The shell is always "standing" in one directory, called the **working directory**.
+      Four commands cover most of getting around: `pwd`, `ls`, `cd` and `cat`.
+  - id: pwd
+    type: task
+    title: Where am I?
+    body: Run `pwd` (print working directory) to see where the shell is standing.
+    hint: Type pwd and press Enter.
+  - id: ls
+    type: task
+    title: Look inside a directory
+    body: |
+      `ls` lists a directory's contents. Give it a path to look somewhere else.
+      List the contents of the `projects` directory.
+    hint: "Try: ls projects"
+  - id: cd-down
+    type: task
+    title: Walk into a directory
+    body: |
+      `cd` changes the working directory. Move into `projects/website`
+      (you can go down two levels in one go).
+    hint: "Try: cd projects/website"
+  - id: cd-home
+    type: task
+    title: Go home
+    body: |
+      Get back to your home directory. There is a shortcut that needs no path at all - or you can use `~`.
+    hint: Run cd on its own, or cd ~
+  - id: cat
+    type: task
+    title: Read a file
+    body: |
+      `cat` prints a file. Read `docs/readme.txt` (you are in your home directory, so the path is relative to it).
+    hint: "Try: cat docs/readme.txt"
