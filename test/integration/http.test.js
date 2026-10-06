@@ -272,3 +272,15 @@ test('every shipped lab loads cleanly and the EB lab has all 11 steps', async ()
     assert.equal(eb.links[0].url.startsWith('https://docs.aws.amazon.com/'), true);
   } finally { app.stop(); }
 });
+
+test('preview mode (no terminal host): pages render, and a session request is refused with a clear message', async () => {
+  const app = await start({ terminal: false });
+  try {
+    assert.equal((await get(app, '/')).status, 200);
+    const html = (await get(app, '/lab/linux-fundamentals/navigating')).body;
+    assert.match(html, /"gated":false/);
+    const r = await mint(app, 'linux-fundamentals', 'navigating');
+    assert.equal(r.status, 501);
+    assert.match(r.body, /not available on this host/);
+  } finally { app.stop(); }
+});

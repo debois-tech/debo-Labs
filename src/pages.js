@@ -136,7 +136,7 @@ const STAT = (id, label) => `<div class="stat-cell"><div class="stat-label">${la
 function labBody(lab, trackTitle, cfg, next) {
   const data = {
     track: lab.track, lab: lab.id, title: lab.title, trackUrl: '/t/' + lab.track,
-    local: cfg.isLocal, gated: !cfg.isLocal, banner: ASCII_BANNER,
+    local: cfg.isLocal, gated: !cfg.isLocal && cfg.terminal, banner: ASCII_BANNER,
     links: lab.links, resources: lab.resources, next,
     steps: lab.steps.map((s) => ({
       id: s.id, type: s.type, title: s.title, hint: s.hint, success: s.success,

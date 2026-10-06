@@ -20,6 +20,8 @@ function loadConfig(env = process.env) {
   return {
     profile,
     isLocal,
+    // Preview mode: the pages render but no shells start (serverless hosts cannot run a pty or keep a WebSocket open).
+    terminal: env.LAB_TERMINAL !== 'off' && !env.VERCEL,
     port: env.PORT || 8080,
     labsDir: env.LABS_DIR || require('path').join(__dirname, '..', 'labs'),
     sandboxDir: env.SANDBOX_DIR || require('path').join(require('os').tmpdir(), 'debo-labs-sandbox'),

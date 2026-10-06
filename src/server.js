@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
-const pty = require('node-pty');
 const WebSocket = require('ws');
 const {
   createSessionStore, createUidPool, killProcessSession, killProcessesOfUid, clientIp,
@@ -145,6 +144,7 @@ function createApp(opts = {}) {
 
     if (req.method === 'POST' && p === '/session') {
       if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
+      if (!cfg.terminal) return json(res, 501, { error: 'no-terminal', message: 'Live terminals are not available on this host. Run Debo Labs with Docker to try the labs (see the README).' });
       return readJson(req, res, ({ track, lab }) => {
         const found = findLab(String(track), String(lab));
         if (!found) return json(res, 404, { error: 'unknown lab' });
@@ -217,7 +217,7 @@ function createApp(opts = {}) {
       const [file, args] = sandbox.asUser(uid, home, 'bash', ['-c', bootstrap]);
       // The environment is deliberately minimal: the learner gets a shell, not this
       // process's config or secrets.
-      shell = pty.spawn(file, args, {
+      shell = require('node-pty').spawn(file, args, {
         name: 'xterm-256color', cols: 80, rows: 24, cwd: home,
         env: { PATH: process.env.PATH, HOME: home, TERM: 'xterm-256color', LANG: 'C.UTF-8', GIT_TERMINAL_PROMPT: '0' },
       });

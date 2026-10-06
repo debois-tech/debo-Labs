@@ -17,7 +17,7 @@
 .jt.is-done { border-color: var(--c); background: var(--c); }
 .jt.is-active { border-color: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
 .jt.is-active::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--c); }
-.jmark { position: absolute; top: 0; left: var(--p, 0%); width: 26px; height: 26px; margin-left: -13px; color: var(--brand); font-size: 26px; transition: left .6s cubic-bezier(.2, .7, .2, 1); pointer-events: none; }
+.jmark { position: absolute; top: -9px; left: var(--p, 0%); width: 26px; height: 26px; margin-left: -6px; color: var(--brand); font-size: 26px; transition: left .6s cubic-bezier(.2, .7, .2, 1); pointer-events: none; }
 .journey.launch .jmark { animation: launch 1.5s cubic-bezier(.5, 0, .9, .4) forwards; }
 @keyframes launch { 0% { opacity: 1; } 100% { left: 118%; opacity: 0; } }
 

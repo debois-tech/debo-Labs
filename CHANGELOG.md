@@ -8,6 +8,13 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 
 ## [Unreleased]
 
+### Added
+- **Preview mode for serverless hosts** (`api/index.js`, `vercel.json`, or `LAB_TERMINAL=off`). The pages render, but no shells start: a lab shows that live terminals need Docker.
+  `node-pty` is now an optional dependency, loaded only when a terminal starts.
+
+### Fixed
+- The progress marker no longer hides behind the active step dot.
+
 ### Changed
 - **Rebranded as Debo Labs**, a Deboistech project: new name, the Deboistech turtle logo in the header, an emerald gradient theme, and Sora for headings. Anything
   that named the previous owner or brand was removed from the code, docs, labs and deploy notes. The terminal prompt mark replaces the old rocket, and the welcome banner
