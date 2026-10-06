@@ -24,7 +24,7 @@ Not a simulator, not a quiz: each task runs a check script against the real stat
 machine (**Windows, macOS or Linux**, one command, no account) or use the hosted version, which runs on [AWS Elastic Beanstalk](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html). Labs are plain YAML and shell scripts,
 so anyone can contribute one.
 
-**Made by [Yash Pawar](https://github.com/yashpawar6849)** ([@yashpawar6849](https://github.com/yashpawar6849)for [Deboistech](https://www.deboistech.in/).
+**Made by [Yash Pawar](https://github.com/yashpawar6849)** ([@yashpawar6849](https://github.com/yashpawar6849) for [Deboistech](https://www.deboistech.in/).
 
 ## Start here
 
@@ -120,8 +120,6 @@ Serverless functions cannot run terminals on their own, so without a lab server 
 
 Contributions are welcome, labs most of all: start with [CONTRIBUTING.md](CONTRIBUTING.md). To report a vulnerability, follow
 [SECURITY.md](SECURITY.md) (please don't open a public issue). The hosted version asks for an invite code; the local app never does.
-
-**Community labs:** *Linux in Action* by [@Heyyprakhar1](https://github.com/Heyyprakhar1) (Yash Pawar). Want yours here? Pick a topic that is missing from [the tracks](labs) and follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Add your own lab
 
