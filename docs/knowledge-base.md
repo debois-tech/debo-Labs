@@ -2,7 +2,7 @@
 
 > Research date: 2026-09-29. Sources: AWS Documentation MCP (`docs.aws.amazon.com/elasticbeanstalk`).
 > **This is a fast-moving feature** — re-verify against live docs before publishing anything
-> (see `CLAUDE.md` research workflow). Docs on the new mode were first indexed **2026-09-17**,
+> (see the research workflow in `AGENTS.md`). Docs on the new mode were first indexed **2026-09-17**,
 > i.e. 12 days before this research — you are genuinely early.
 
 ---
@@ -40,7 +40,7 @@ Group per app.
 - HTTPS by default via AWS Certificate Manager, with **zero certificate configuration**.
 - Ships with a **new official Elastic Beanstalk GitHub Action** for CI/CD, and **"agent skills"**
   — AWS published an agent-toolkit skill (`github.com/aws/agent-toolkit-for-aws` →
-  `skills/core-skills/aws-containers/SKILL.md`) so that AI coding agents (Claude Code, Q, etc.)
+  `skills/core-skills/aws-containers/SKILL.md`) so that AI coding agents (Amazon Q and others)
   can deploy to Beanstalk Cluster directly. **This is notable and underreported** — AWS is
   explicitly designing this feature to be driven by AI agents, not just humans clicking a
   console. Great content angle: "AWS built this so your AI agent can deploy it for you."
@@ -263,7 +263,7 @@ Application Versions in Cluster Mode take an `ImageConfiguration` with **exactly
   is very new, may lag).
 - **AWS "agent skills"** — AWS published a skill for AI coding agents:
   `github.com/aws/agent-toolkit-for-aws` → `skills/core-skills/aws-containers/SKILL.md`.
-  **Strong, differentiated content angle**: demo an AI agent (Claude Code, Amazon Q, etc.)
+  **Strong, differentiated content angle**: demo an AI coding agent (Amazon Q, etc.)
   provisioning and deploying a Cluster Mode environment end-to-end using that skill — very few
   people will have shown this.
 
@@ -281,7 +281,7 @@ Application Versions in Cluster Mode take an `ImageConfiguration` with **exactly
 4. **"Is this AWS answering simpler app platforms?"** — comparative framing, developer experience vs. control
    trade-offs, cost model breakdown (pooled infra = cheaper at scale).
 5. **"I let an AI agent deploy to AWS Elastic Beanstalk Cluster Mode"** — using the official
-   AWS agent-toolkit skill with Claude Code; strong differentiated YouTube/reel material.
+   AWS agent-toolkit skill with an AI coding agent; strong differentiated YouTube/reel material.
 6. **Carousel: "Beanstalk Standard vs Beanstalk Cluster in 8 slides"** — use the comparison
    table in §2 directly.
 7. **Scaling deep-dive reel: "Your AWS app can now scale on literally anything"** — CPU, memory,

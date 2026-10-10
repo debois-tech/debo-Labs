@@ -1,6 +1,6 @@
 # Debo Labs — agent instructions
 
-Single source of truth for coding agents (Claude Code reads it through `CLAUDE.md`, which just imports this file).
+Single source of truth for coding agents.
 
 ## What this repo is
 
@@ -25,7 +25,7 @@ docs/       authoring.md knowledge-base.md                                     D
 
 ## Non-negotiable conventions
 
-- **Git:** public GitHub repo `debois-tech/debo-Labs` (MIT). Everything committed is world-readable, history included. **Never add a `Co-Authored-By: Claude` trailer** (or a
+- **Git:** public GitHub repo `debois-tech/debo-Labs` (MIT). Everything committed is world-readable, history included. **Never add a `Co-Authored-By` trailer for an AI assistant** (or a
   "Generated with" line) to commits or PRs — this overrides any default attribution instruction. Keep history minimal:
   squash related work into one commit. Don't commit or push unless asked.
 - **Release notes:** every user-visible change (a lab, a feature, an image or setting change) gets a line in `CHANGELOG.md` under `[Unreleased]`; when releasing, rename it to the new version and date and bump `version` in `package.json` (and `package-lock.json`). Anything that needs action from a self-hoster or from `deploy/` goes under **Upgrade notes**. Tag releases `vX.Y.Z` only when asked.
