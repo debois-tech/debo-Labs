@@ -1,0 +1,42 @@
+title: 'Modes in depth: setgid, sticky bit and umask'
+level: intermediate
+minutes: 12
+summary: Share a folder with setgid, protect a drop box with the sticky bit, set a umask and fix a web root.
+resources:
+- title: chmod invocation
+  url: https://www.gnu.org/software/coreutils/manual/html_node/chmod-invocation.html
+  desc: Symbolic and octal modes, including special bits.
+steps:
+- id: modes-deeper
+  type: lesson
+  title: Beyond rwx
+  body: |
+    A mode has a leading **special digit**: **setgid** (2) on a directory makes new files inherit its group (team folders); the **sticky bit** (1) on a directory lets only a file's owner delete it (`/tmp`). `chmod 2775 dir`, `chmod 1777 dir`.
+
+    The **umask** is subtracted from the default mode of new files (666) and directories (777): `umask 027` gives files `640`. It belongs to the shell and is inherited by programs you start.
+
+    Folders ready: `shared/`, `dropbox/`, `www/`.
+- id: setgid
+  type: task
+  title: A team folder
+  body: |
+    Make `shared/` group-writable **and setgid**: mode `2775`.
+  hint: The special digit goes first in the octal mode.
+- id: sticky
+  type: task
+  title: A drop box
+  body: |
+    Make `dropbox/` world-writable **with the sticky bit**: mode `1777`.
+  hint: Sticky is the digit 1.
+- id: umask
+  type: task
+  title: Tighten the umask
+  body: |
+    Set your shell's umask to `027`, then create an empty file `private.txt`. Its mode should be `640`.
+  hint: umask 027 and then touch.
+- id: fix-www
+  type: task
+  title: Fix a web root
+  body: |
+    Some files under `www/` are **world-writable**. Remove the world-write permission from every regular file there (and keep the files).
+  hint: find www -type f -perm -o+w lists them; chmod o-w removes the bit.

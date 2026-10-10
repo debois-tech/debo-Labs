@@ -1,0 +1,48 @@
+title: 'Redirection: stdout, stderr and tee'
+level: beginner
+minutes: 12
+summary: Split, merge, append, tee and count the two output streams of a program.
+resources:
+- title: 'Bash manual: redirections'
+  url: https://www.gnu.org/software/bash/manual/html_node/Redirections.html
+  desc: Every redirection operator, in order of evaluation.
+steps:
+- id: streams-idea
+  type: lesson
+  title: Two output streams
+  body: |
+    Programs write to **stdout** (file descriptor 1) and **stderr** (2). `>` redirects stdout, `2>` redirects stderr, `>>` appends, `2>&1` sends stderr to wherever stdout goes, `/dev/null` swallows output, and `| tee file` shows output *and* saves it.
+
+    **Order matters:** `cmd > f 2>&1` sends both to the file; `cmd 2>&1 > f` sends stderr to the terminal.
+
+    `./noisy.sh` prints three lines on stdout and two on stderr.
+- id: split
+  type: task
+  title: Separate the streams
+  body: |
+    Run `./noisy.sh` so stdout goes to `out.txt` and stderr goes to `err.txt`.
+  hint: '> for stdout, 2> for stderr, in one command.'
+- id: merge
+  type: task
+  title: Merge them
+  body: |
+    Run `./noisy.sh` so that **both** streams end up in `all.txt`, in the order they were written.
+  hint: 2>&1 after the > file.
+- id: append
+  type: task
+  title: Append twice
+  body: |
+    Run `./noisy.sh` **twice**, appending only its stdout (hide stderr) to `log.txt`, so the file holds the stdout lines two times.
+  hint: '>> appends instead of overwriting.'
+- id: tee
+  type: task
+  title: See it and save it
+  body: |
+    Run `./noisy.sh` (hiding stderr) and pipe it through `tee seen.txt`, so you see the output **and** `seen.txt` keeps it.
+  hint: cmd | tee file
+- id: count-stderr
+  type: task
+  title: Count the error lines
+  body: |
+    How many lines does `./noisy.sh` write to **stderr**? Save just the number in `errcount.txt` by piping only stderr into `wc -l`.
+  hint: 'Send stderr into the pipe and stdout to /dev/null: 2>&1 >/dev/null |'

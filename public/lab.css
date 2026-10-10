@@ -80,10 +80,14 @@
 /* shareable completion card */
 .share { margin-top: 18px; }
 .share-card { border: 1px solid var(--rule2); border-radius: 14px; padding: 20px 22px; background: linear-gradient(135deg, #04100c, #0a2a1e); }
-.sc-top { display: flex; align-items: center; gap: 10px; font: 600 15px var(--display); } .sc-top img { width: 28px; height: 28px; } .sc-top b { color: var(--brand2); font-weight: 600; }
+.sc-top { display: flex; align-items: center; gap: 10px; font: 600 15px var(--display); } .sc-top img { height: 26px; width: auto; } .sc-top b { color: var(--brand2); font-weight: 600; }
 .sc-kicker { margin-top: 18px; font: 600 11px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brand); }
 .sc-title { margin-top: 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.02em; }
 .sc-meta { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .sc-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); } .sc-name { color: var(--text); font-weight: 600; }
 .share-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; } .share-actions .btn { text-decoration: none; }
 .share-note { margin: 8px 0 0; font-size: 12px; color: var(--faint); }
+
+.cert-earned { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--rule2); border-radius: 12px; display: grid; gap: 10px; justify-items: start; }
+.cert-earned-id { font: 500 15px var(--mono); letter-spacing: .02em; }
+.cert-earned .btn { text-decoration: none; }

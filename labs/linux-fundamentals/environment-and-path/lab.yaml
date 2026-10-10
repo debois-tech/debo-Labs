@@ -1,0 +1,42 @@
+title: Environment variables and PATH
+level: beginner
+minutes: 12
+summary: Export variables to child programs, extend PATH, locate commands and make a setting stick.
+resources:
+- title: 'Bash reference: shell variables'
+  url: https://www.gnu.org/software/bash/manual/html_node/Shell-Variables.html
+  desc: PATH, HOME and the other variables the shell uses.
+steps:
+- id: env-idea
+  type: lesson
+  title: Settings that programs inherit
+  body: |
+    A shell variable is private to the shell; **`export`** puts it in the **environment**, which every program you start inherits (`APP_ENV=staging` alone is not enough).
+
+    **`PATH`** is a colon-separated list of folders searched for commands. `type -P ls` or `which ls` shows where a command comes from. Settings you want in every new shell go in `~/.bashrc`.
+
+    Helper scripts: `show.sh` prints `$APP_ENV`; `bin/hello-tool` prints a greeting.
+- id: export-var
+  type: task
+  title: Export a variable
+  body: |
+    Set `APP_ENV` to `staging` **and export it**, then run `./show.sh` and save its output in `out.txt`. The script only sees the variable if it was exported.
+  hint: export NAME=value, then ./show.sh > out.txt
+- id: extend-path
+  type: task
+  title: Put a folder on the PATH
+  body: |
+    The command `hello-tool` lives in `~/bin` but is not on your PATH. Add `~/bin` to the **front** of PATH for this shell, run `hello-tool`, and save its output in `hello.out`.
+  hint: export PATH="$HOME/bin:$PATH"
+- id: where-is
+  type: task
+  title: Where does a command come from?
+  body: |
+    Find the full path of the `ls` command with `type -P ls` (or `which ls`) and save it in `lspath.txt`.
+  hint: type -P prints just the path.
+- id: persist
+  type: task
+  title: Make it permanent
+  body: |
+    A variable set in a terminal vanishes with it. Append the line `export GREETING=hello` to `~/.bashrc` so every new shell gets it.
+  hint: echo "..." >> ~/.bashrc  (>> appends, > overwrites)

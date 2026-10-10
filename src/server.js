@@ -76,7 +76,11 @@ function readJson(req, res, cb) {
     if (tooBig) return;
     let parsed;
     try { parsed = JSON.parse(body); } catch { return json(res, 400, { error: 'bad json' }); }
-    cb(parsed || {});
+    // A handler that throws (or rejects) answers this one request with a 500; it must never take the process, and every learner's terminal, down.
+    Promise.resolve().then(() => cb(parsed || {})).catch((e) => {
+      console.error(`${req.method} ${req.url} failed:`, e && e.stack || e);
+      if (!res.headersSent) json(res, 500, { error: 'server error' });
+    });
   });
 }
 
@@ -224,9 +228,34 @@ function createApp(opts = {}) {
         });
         // Failed checks are counted per step, server-side: after ANSWER_AFTER misses the learner may ask for the answer.
         session.fails = session.fails || {};
+        if (r.pass) { session.passed = session.passed || {}; session.passed[step.id] = true; }
         if (!r.pass) session.fails[step.id] = (session.fails[step.id] || 0) + 1;
         json(res, 200, { pass: r.pass, message: r.pass ? '' : r.message, fails: session.fails[step.id] || 0, answerAfter: ANSWER_AFTER });
       });
+    }
+
+    // A credential for a finished lab: only if THIS session saw every task's check pass (the server's own record, not the page's claim).
+    if (req.method === 'POST' && p === '/certificate') {
+      if (!auth) return json(res, 404, { error: 'not-available' });
+      if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
+      const user = auth.userFrom(req);
+      if (!user) return json(res, 401, { error: 'login-required' });
+      return readJson(req, res, ({ token }) => {
+        const session = store.get(token);
+        const lab = session && findLab(session.meta.track, session.meta.lab);
+        if (!lab) return json(res, 403, { error: 'invalid session' });
+        const passed = session.passed || {};
+        if (!lab.steps.filter((s) => s.type === 'task').every((s) => passed[s.id])) return json(res, 403, { error: 'not-complete', message: 'Pass every task of this lab to earn the certificate.' });
+        const cert = auth.issueCertificate(user, { track: lab.track, lab: lab.id, labTitle: lab.title });
+        auth.markDone(user, [`${lab.track}/${lab.id}`]);
+        json(res, 200, { id: cert.id, url: '/certificate/' + cert.id });
+      });
+    }
+    if (auth && req.method === 'GET' && (m = p.match(/^\/certificate\/(DL(?:-[0-9A-F]{4}){4})$/))) {
+      const cert = auth.getCertificate(m[1]);
+      if (!cert) return send(res, 404, 'text/html', page('Not found', pages.notFoundBody()));
+      const base = `${cfg.isLocal ? 'http' : 'https'}://${req.headers.host}`;
+      return send(res, 200, 'text/html', page(`Certificate · ${cert.labTitle}`, pages.certificateBody(cert, base), '<script src="/certificate.js"></script>', '<link rel="stylesheet" href="/certificate.css" />'));
     }
 
     // The answer to a task: the commands in solutions/<step>.sh, released only after ANSWER_AFTER failed checks of that step.
@@ -331,6 +360,9 @@ function createApp(opts = {}) {
 }
 
 if (require.main === module) {
+  // Last line of defence for a shared server: log, and keep serving everyone else.
+  process.on('unhandledRejection', (e) => console.error('unhandled rejection:', e && e.stack || e));
+  process.on('uncaughtException', (e) => console.error('uncaught exception:', e && e.stack || e));
   const { server, cfg } = createApp();
   server.listen(cfg.port, () => console.log(`Debo Labs listening on ${cfg.port}, profile=${cfg.profile}, seats=${cfg.maxSessions}/replica, labs=${cfg.labsDir}`));
 }

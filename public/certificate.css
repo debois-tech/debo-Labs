@@ -1,0 +1,21 @@
+/* the certificate: a white panel with the name and lab, a brand-coloured panel with the seal. Sized in container units so it scales as one picture. */
+.cert-page { max-width: 1040px; margin: 0 auto; padding: 36px 20px 80px; }
+.cert { container-type: inline-size; display: grid; grid-template-columns: 64fr 36fr; aspect-ratio: 1.414; background: #fff; color: #0b1f17; border-radius: 6px; overflow: hidden; }
+.cert-main { display: flex; flex-direction: column; padding: 6.4cqw 5cqw 4.4cqw 5.6cqw; min-width: 0; }
+.cert-brand { display: flex; align-items: center; gap: 1.2cqw; font: 600 2.4cqw var(--display); color: #0b1f17; } .cert-brand img { height: 3.6cqw; width: auto; } .cert-brand b { color: #10b981; font-weight: 600; }
+.cert-pre { margin: 0; font: 400 1.9cqw var(--sans); color: #1d2b25; }
+.cert-pre:nth-of-type(1) { margin-top: 6.2cqw; }
+.cert-name { margin: 1.4cqw 0 4cqw; font: 500 4.1cqw/1.15 var(--sans); letter-spacing: -.01em; color: #08140f; overflow-wrap: anywhere; }
+.cert-title { margin: 1.4cqw 0 0; font: 500 3.3cqw/1.2 var(--sans); letter-spacing: -.01em; color: #08140f; overflow-wrap: anywhere; }
+.cert-date { margin: 2.2cqw 0 0; font: 400 1.55cqw var(--sans); color: #1d2b25; }
+.cert-id { margin: 1.6cqw 0 0; font: 400 1.3cqw var(--mono); color: #3b4a43; }
+.cert-logo { margin-top: auto; width: 27cqw; height: auto; align-self: flex-start; }
+.cert-side { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6.4cqw 2cqw 5cqw; text-align: center; color: #fff;
+  background: linear-gradient(160deg, #0b8f6a 0%, #0d9488 55%, #4d9a26 100%); }
+.cert-mark { width: 12cqw; height: auto; opacity: .95; }
+.cert-side-name { margin-top: -3cqw; font: 600 3cqw var(--display); letter-spacing: -.01em; }
+.cert-side-kind { font: 400 2.1cqw/1.35 var(--sans); opacity: .95; }
+.cert-seal { width: 14cqw; height: auto; }
+.cert-verify { margin: 18px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; } .cert-verify strong { color: var(--text); } .cert-verify code { font-size: 12px; }
+.cert-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; } .cert-actions .btn { text-decoration: none; }
+@media print { body { background: #fff; } .cert-actions, .cert-verify, .topbar { display: none; } .cert-page { padding: 0; max-width: none; } }

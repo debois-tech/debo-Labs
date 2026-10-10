@@ -1,0 +1,48 @@
+title: Dates, times and timestamps
+level: beginner
+minutes: 10
+summary: Format dates, do date maths, convert to epoch seconds, and set and sort by modification time.
+resources:
+- title: date invocation
+  url: https://www.gnu.org/software/coreutils/manual/html_node/date-invocation.html
+  desc: Formats, relative dates and time zones.
+steps:
+- id: time-idea
+  type: lesson
+  title: Time on the command line
+  body: |
+    `date` prints and formats time: `date +%F` is `2026-10-10`. `date -d 'expression'` understands phrases like `10 days ago`. **Epoch time** counts seconds since 1970-01-01 UTC (`+%s`), the form logs and APIs use. Add `-u` for UTC.
+
+    Every file has a **modification time**: `touch -d '2020-01-01 12:00' file` sets it, and `ls -t` sorts by it, newest first.
+
+    Files to play with are in `files/`.
+- id: today
+  type: task
+  title: Today, formatted
+  body: |
+    Save today's date in the form `YYYY-MM-DD` in `today.txt`.
+  hint: date +%F
+- id: ten-days-ago
+  type: task
+  title: Date arithmetic
+  body: |
+    Save the date of **10 days ago** (`YYYY-MM-DD`) in `past.txt`.
+  hint: date -d '10 days ago' +%F
+- id: epoch
+  type: task
+  title: Seconds since 1970
+  body: |
+    Save the epoch seconds of **2026-01-01 00:00:00 UTC** in `epoch.txt`.
+  hint: date -u -d '...' +%s
+- id: set-mtime
+  type: task
+  title: Back-date a file
+  body: |
+    Set the modification time of `files/report.txt` to **2020-01-01 12:00**.
+  hint: touch -d
+- id: newest-first
+  type: task
+  title: Newest first
+  body: |
+    Save the file names in `files/` sorted by modification time, **newest first**, in `newest.txt`.
+  hint: ls -t lists newest first.

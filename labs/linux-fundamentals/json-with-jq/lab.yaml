@@ -1,0 +1,46 @@
+title: JSON on the command line with jq
+level: intermediate
+minutes: 12
+summary: Read, filter, total and reshape JSON, the format every cloud API speaks.
+resources:
+- title: jq manual
+  url: https://jqlang.github.io/jq/manual/
+  desc: Every filter and function, with examples.
+steps:
+- id: jq-idea
+  type: lesson
+  title: A query language for JSON
+  body: |
+    Cloud tools answer in JSON, and **`jq`** slices it: `.[]` iterates an array, `.name` picks a field, `select(.cpu > 2)` filters, `map(...)` transforms every item, `add` sums, and `-r` prints raw strings (no quotes).
+
+    Example: `jq -r '.[].name' servers.json`. A file `servers.json` describes four servers.
+- id: names
+  type: task
+  title: List the names
+  body: |
+    Write the `name` of every server, **raw**, one per line, to `names.txt`.
+  hint: jq -r '.[].name'
+- id: filter
+  type: task
+  title: Filter by region
+  body: |
+    Write a JSON array with only the servers in **`ap-south-1`** to `mumbai.json`.
+  hint: map(select(.region == "ap-south-1"))
+- id: total-cpu
+  type: task
+  title: Add up the CPUs
+  body: |
+    Write the **total number of CPUs** across all servers to `cpu.txt`.
+  hint: map(.cpu) | add
+- id: summary
+  type: task
+  title: Build a new document
+  body: |
+    Create `summary.json`: a JSON **object** `{"count": <number of servers>, "cpu": <total CPUs>}`.
+  hint: 'jq can construct objects: {count: length, cpu: (map(.cpu) | add)}'
+- id: nested
+  type: task
+  title: Reach into nested fields
+  body: |
+    List the names of the servers whose tag `team` is **`data`**, raw, one per line, in `data-team.txt`.
+  hint: The tag lives at .tags.team

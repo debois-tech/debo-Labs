@@ -9,6 +9,10 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 ## [Unreleased]
 
 ### Added
+- **Verifiable certificates.** A signed-in learner who finishes a lab gets a certificate (name, lab, date, a unique credential ID like `DL-7F3A-9C21-4E8B-A05D`, the full logo) at `/certificate/<id>`, with *Download image*, *Add to LinkedIn profile*, *Copy post text* and *Copy link*. The server issues it only after **that session** passed every task of the lab, stores it, and anyone can open the link to verify it. It is a practice-completion certificate, not a vendor certification, and says so.
+- **AWS Cloud Practitioner track** (8 labs, 44 graded tasks) typed against the offline `aws` practice CLI: the CLI, Regions and zones; IAM users and groups; custom IAM policies and explicit Deny; S3 buckets and objects; S3 versioning, storage classes and lifecycle; EC2 launch, security groups and clean-up; CloudWatch alarms with SNS; billing, tags, budgets and support plans.
+- **13 more Linux labs** in Linux Fundamentals: processes and signals; sed and awk; find and xargs; tar and gzip; links and inodes; environment and PATH; setgid, sticky bit and umask; redirection and tee; scripts with arguments, loops and exit codes; JSON with jq; regular expressions with grep; dates and timestamps; disk usage.
+- **A soft lab timer.** On servers with no session time limit, the lab page counts down the lab's suggested time plus a buffer (50%, at least 5 minutes) from the moment the terminal connects. It never ends the session; past zero it shows how long you are over.
 - **Show answer after 3 failed checks.** Press Check and miss a task three times and a *Show answer* button appears with the commands that solve it. The server counts the misses per task and releases the answer only then (`POST /lab/answer`).
 - **A completion card you can share.** Finishing a lab shows a congratulations screen with the tasks you solved and a card (your name if you are logged in, the lab, the date). *Download image* saves a 1200x627 PNG, *Copy LinkedIn post* copies ready-made text with hashtags, and *Share on LinkedIn* opens the share page.
 - **An offline `aws` practice CLI** in the image (`tools/aws-sim`, see `docs/aws-simulator.md`) for the upcoming AWS Cloud Practitioner labs: IAM, S3, EC2, CloudWatch, SNS, Budgets and Cost Explorer against a simulated account kept in the learner's home. New dependency: `jmespath` (for `--query`).
@@ -28,6 +32,7 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - The progress marker no longer hides behind the active step dot.
 
 ### Changed
+- A request handler that fails now answers that request with a 500 instead of crashing the whole server (which dropped every open terminal), and the server logs stray errors and keeps running. The VPS memory limit default is 5 GB (was 6 GB) to leave the host room.
 - **No session time limit on `deploy/vps`** (`LAB_HARD_CAP_MIN=0`; any server can use `0` to turn the limit off). Idle sessions are still closed, after 30 minutes by default there (`LAB_IDLE_MIN`), to free the seat.
 - **Capacity: 50 learners at once** on the `deploy/vps` server (was 8). The image now has 60 learner users (`lab0..lab59`, was 40), and the server's per-IP limit, memory (6 GB), process and scratch-disk limits were raised to match. Size the VM for it: 2 vCPU / 8 GB handles 50 mostly idle shells; heavy commands from many learners at once will be slow.
 - **Rebranded as Debo Labs**, a Deboistech project: new name, the Deboistech turtle logo in the header, an emerald gradient theme, and Sora for headings. Anything

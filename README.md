@@ -8,14 +8,14 @@
 [![CI](https://github.com/debois-tech/debo-Labs/actions/workflows/ci.yml/badge.svg)](https://github.com/debois-tech/debo-Labs/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/debois-tech/debo-Labs?style=flat-square&color=10b981)](https://github.com/debois-tech/debo-Labs/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Labs](https://img.shields.io/badge/labs-19-10b981?style=flat-square)](#whats-online)
-[![Graded tasks](https://img.shields.io/badge/graded%20tasks-105-0d9488?style=flat-square)](#how-it-works)
+[![Labs](https://img.shields.io/badge/labs-40-10b981?style=flat-square)](#whats-online)
+[![Graded tasks](https://img.shields.io/badge/graded%20tasks-211-0d9488?style=flat-square)](#how-it-works)
 [![Runs on](https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-lightgrey?style=flat-square)](#run-it-locally)
 [![Stars](https://img.shields.io/github/stars/debois-tech/debo-Labs?style=flat-square)](https://github.com/debois-tech/debo-Labs/stargazers)
 <!-- badges:end -->
 
 <!-- pitch:start -->
-**19 labs · 105 graded tasks · every task proven solvable by a script.**
+**40 labs · 211 graded tasks · every task proven solvable by a script.**
 <!-- pitch:end -->
 
 </div>
@@ -43,9 +43,10 @@ so anyone can contribute one.
 <!-- routes:start -->
 | Track | Labs | Time | What you do |
 |---|---|---|---|
-| **Linux Fundamentals** | 6 | 70 min | Find your way around a Linux shell, manage files, understand permissions, and chain commands together. |
+| **Linux Fundamentals** | 19 | 229 min | Find your way around a Linux shell, manage files, understand permissions, and chain commands together. |
 | **Git Basics** | 3 | 34 min | Record history, work on branches, merge, and undo mistakes - using the real git CLI. |
 | **AWS** | 1 | 15 min | Hands-on tours of AWS services, inside a real terminal on the kind of container they run. |
+| **AWS Cloud Practitioner** | 8 | 102 min | Hands-on practice for the Cloud Practitioner exam topics, in a real terminal against an offline copy of the AWS CLI. |
 | **Docker** | 3 | 45 min | See what a container really is, write a clean Dockerfile, and understand image layers and Compose. |
 | **Networking** | 3 | 50 min | Addresses, ports, names and TLS - the four things between a browser and your app, on a real Linux machine. |
 | **CI/CD with GitHub Actions** | 3 | 45 min | Write real workflow files, check them like a runner would, and learn the safe way to deploy to AWS from CI. |

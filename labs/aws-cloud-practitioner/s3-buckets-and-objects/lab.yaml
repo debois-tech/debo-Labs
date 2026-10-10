@@ -1,0 +1,65 @@
+title: 'S3: buckets and objects'
+level: beginner
+minutes: 12
+summary: Create a bucket, upload and download objects, share one safely, and clean up.
+resources:
+- title: What is Amazon S3?
+  url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
+  desc: Buckets, objects, keys and the S3 features.
+- title: Bucket naming rules
+  url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+  desc: Why names are global and what is allowed.
+steps:
+- id: s3-idea
+  type: lesson
+  title: Object storage in a global namespace
+  body: |
+    **S3** stores *objects* (files plus metadata) in *buckets*. There are no real folders: `docs/notes.md` is one key with the prefix `docs/`.
+
+    - Bucket names are **globally unique** across all AWS accounts, so teams often add their account ID.
+    - New buckets **block public access** and encrypt objects by default.
+    - You pay for storage, requests and data transfer out. Delete what you no longer need.
+- id: make-bucket
+  type: task
+  title: Create a bucket
+  body: |
+    First try `aws s3 mb s3://my-bucket` and read the error: somebody else already owns that name.
+
+    Then create the bucket **`debo-reports-123456789012`** (a name made unique with your account ID).
+  hint: aws s3 mb s3://<name> makes a bucket.
+- id: upload
+  type: task
+  title: Upload two objects
+  body: |
+    Upload `report.txt` to the **root** of the bucket and `notes.md` under the prefix **`docs/`** (so its key is `docs/notes.md`).
+  hint: aws s3 cp <file> s3://bucket/<key>. A key ending in / adds the file name for you.
+- id: count
+  type: task
+  title: Count the objects
+  body: |
+    How many objects are in the bucket now? Use `aws s3api list-objects-v2` and write **just the number** to `count.txt`.
+  hint: Try --query 'length(Contents)' --output text.
+- id: download
+  type: task
+  title: Download an object
+  body: |
+    Download `docs/notes.md` from the bucket to a local file named `notes-copy.md`.
+  hint: 'aws s3 cp works in both directions: swap the arguments.'
+- id: presign
+  type: task
+  title: Share an object for 10 minutes
+  body: |
+    The bucket is private. Create a **pre-signed URL** for `report.txt` that stops working after **600 seconds** and save it in `url.txt`.
+  hint: aws s3 presign has an --expires-in option (seconds).
+- id: public-access
+  type: task
+  title: Check public access is blocked
+  body: |
+    Read the bucket's **Block Public Access** settings (`aws s3api get-public-access-block`) and save the value of `BlockPublicPolicy` in `bpa.txt`.
+  hint: Use --query 'PublicAccessBlockConfiguration.BlockPublicPolicy' --output text.
+- id: cleanup
+  type: task
+  title: Clean up
+  body: |
+    Delete the bucket **and everything in it**. A bucket must be empty before it can go; one command can do both.
+  hint: aws s3 rb has a --force option.

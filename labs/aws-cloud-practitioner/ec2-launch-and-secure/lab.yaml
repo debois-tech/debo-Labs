@@ -1,0 +1,59 @@
+title: 'EC2: launch, secure and clean up'
+level: beginner
+minutes: 15
+summary: Create a key pair and a firewall, launch a server, stop it, and terminate it.
+resources:
+- title: Amazon EC2 instances
+  url: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Instances.html
+  desc: Instance types, lifecycle and billing states.
+- title: Security groups
+  url: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html
+  desc: Stateful rules, allow-only, and defaults.
+steps:
+- id: ec2-idea
+  type: lesson
+  title: Virtual servers by the second
+  body: |
+    **EC2** rents virtual servers (*instances*). You pick an **AMI** (the OS image) and an **instance type** (CPU and memory). Instances are billed while *running*; a *stopped* instance stops compute charges (its disk still costs); *terminated* is gone for good.
+
+    A **security group** is a stateful firewall around the instance: it only has *allow* rules. Open SSH to **your** address, not the world.
+- id: key-pair
+  type: task
+  title: Make a key pair
+  body: |
+    Create a key pair `debo-key` and save its private key to `debo-key.pem`. SSH refuses keys others can read, so make the file **owner read-only** (mode 400).
+  hint: create-key-pair prints the private key in KeyMaterial; use --query KeyMaterial --output text and then chmod.
+- id: create-sg
+  type: task
+  title: Create a security group
+  body: |
+    Create a security group named `web-sg` with the description `Web server`.
+  hint: aws ec2 create-security-group --group-name ... --description ...
+- id: open-ports
+  type: task
+  title: Open only what is needed
+  body: |
+    In `web-sg` allow:
+    - **SSH (TCP 22)** only from `203.0.113.0/24` (the office network),
+    - **HTTP (TCP 80)** from anywhere (`0.0.0.0/0`).
+
+    Never open SSH to `0.0.0.0/0`.
+  hint: authorize-security-group-ingress takes --group-id, --protocol, --port and --cidr. Look up the group id with describe-security-groups.
+- id: launch
+  type: task
+  title: Launch the server
+  body: |
+    Launch **one** `t3.micro` instance from the AMI in `ami.txt`, with the key pair `debo-key`, the security group `web-sg` (by **ID**), and the tag `Name=web-1`.
+  hint: 'run-instances: --image-id --instance-type --key-name --security-group-ids --tag-specifications ''ResourceType=instance,Tags=[{Key=Name,Value=web-1}]''.'
+- id: stop
+  type: task
+  title: Stop it
+  body: |
+    Stop `web-1`. A stopped instance does not bill for compute, and you can start it again later.
+  hint: Find the id with describe-instances --filters Name=tag:Name,Values=web-1, then stop-instances.
+- id: terminate
+  type: task
+  title: Terminate it
+  body: |
+    You are done with the server: **terminate** `web-1` so nothing keeps costing money.
+  hint: terminate-instances, same id as before.

@@ -1,0 +1,57 @@
+title: 'S3: versioning, storage classes, lifecycle'
+level: intermediate
+minutes: 15
+summary: Undo an accidental delete with versioning, then cut cost with storage classes and lifecycle.
+resources:
+- title: Using versioning in S3 buckets
+  url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
+  desc: Versions, delete markers and recovering objects.
+- title: Amazon S3 storage classes
+  url: https://aws.amazon.com/s3/storage-classes/
+  desc: Every class, its use case and price model.
+steps:
+- id: why-versioning
+  type: lesson
+  title: Undo for objects
+  body: |
+    With **versioning** on, overwriting an object keeps the old version, and deleting adds a **delete marker** instead of erasing data. Removing the marker brings the object back.
+
+    **Storage classes** trade price for access: *Standard* (frequent), *Standard-IA* (infrequent), *Glacier* classes (archive, cheapest, slower). **Lifecycle rules** move or expire objects automatically.
+- id: enable-versioning
+  type: task
+  title: Turn on versioning
+  body: |
+    The bucket `debo-archive-123456789012` already exists. Enable versioning on it.
+  hint: put-bucket-versioning takes --versioning-configuration Status=Enabled.
+- id: two-versions
+  type: task
+  title: Create two versions
+  body: |
+    Upload `plan.txt` to the bucket. Then change the file (put the text `v2` in it) and upload it again to the **same key**.
+  hint: Upload, edit the local file, upload again.
+- id: delete
+  type: task
+  title: Delete it by accident
+  body: |
+    Delete `plan.txt` from the bucket the ordinary way (`aws s3 rm`). Then list its versions with `aws s3api list-object-versions` and notice the delete marker.
+  hint: aws s3 rm s3://bucket/key
+- id: restore
+  type: task
+  title: Bring it back
+  body: |
+    Restore `plan.txt` by **deleting the delete marker** (not the data versions): `aws s3api delete-object` with that marker's `--version-id`.
+  hint: 'Find the marker''s id: list-object-versions --query ''DeleteMarkers[0].VersionId''.'
+- id: infrequent
+  type: task
+  title: Store it cheaper
+  body: |
+    Upload `plan.txt` again as **`archive/plan-v2.txt`** using the **STANDARD_IA** (infrequent access) storage class.
+  hint: aws s3 cp has a --storage-class option.
+- id: lifecycle
+  type: task
+  title: Automate the savings
+  body: |
+    `lifecycle.json` should move `archive/` objects to STANDARD_IA, then to GLACIER after 90 days, and delete them after a year. Apply it with `put-bucket-lifecycle-configuration`.
+
+    S3 rejects it as written. Read the error, fix the file, apply it again.
+  hint: Objects must stay in Standard for a minimum number of days before moving to Standard-IA. The error says how many.

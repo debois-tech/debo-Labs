@@ -1,0 +1,43 @@
+title: 'Scripts: arguments, loops, functions, exit codes'
+level: intermediate
+minutes: 15
+summary: Write small scripts that take arguments, loop, return exit codes and define a function.
+resources:
+- title: 'Bash manual: shell functions'
+  url: https://www.gnu.org/software/bash/manual/html_node/Shell-Functions.html
+  desc: Defining and calling functions, with arguments.
+steps:
+- id: script-parts
+  type: lesson
+  title: Building blocks
+  body: |
+    - **Arguments:** `$1`, `$2`, and `"$@"` (all of them). `$#` counts them.
+    - **Loops:** `for n in "$@"; do ...; done`. Arithmetic: `total=$((total + n))`.
+    - **Exit codes:** `0` means success; anything else is failure. `$?` holds the last one; `[ -e file ]` succeeds when the file exists.
+    - **Functions:** `greet() { echo "Hello, $1!"; }`. Put them in a file and load them with `source`.
+
+    Make scripts executable with `chmod +x`. There is a `data/` folder with three `.csv` files.
+- id: sum
+  type: task
+  title: A script with arguments
+  body: |
+    Write an executable `sum.sh` that prints the **sum of its arguments**: `./sum.sh 1 2 3` prints `6`, and with no arguments it prints `0`.
+  hint: 'A for loop over "$@" and $(( )) arithmetic; do not forget #!/bin/bash and chmod +x.'
+- id: exists
+  type: task
+  title: Return an exit code
+  body: |
+    Write an executable `exists.sh`: it exits **0** if the file named by its first argument exists and **1** if it does not (no output needed).
+  hint: '[ -e "$1" ] already returns the right exit code; a script returns the status of its last command.'
+- id: function
+  type: task
+  title: Define a function
+  body: |
+    Create `greet.sh` that defines a function `greet`. After `source ./greet.sh`, running `greet Bob` must print `Hello, Bob!`.
+  hint: greet() { ...; } and $1 for the argument.
+- id: loop-files
+  type: task
+  title: Loop over files
+  body: |
+    With a `for` loop over `data/*.csv`, write the **base name without folder or `.csv`** of each file, one per line, to `names.txt`.
+  hint: basename FILE .csv strips the folder and the suffix.

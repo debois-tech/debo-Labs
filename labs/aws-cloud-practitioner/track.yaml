@@ -1,0 +1,4 @@
+order: 3
+title: AWS Cloud Practitioner
+description: Hands-on practice for the Cloud Practitioner exam topics, in a real terminal against an offline copy of the AWS CLI.
+labs: [cli-first-steps, iam-users-and-groups, iam-custom-policies, s3-buckets-and-objects, s3-versioning-and-classes, ec2-launch-and-secure, cloudwatch-sns-alarms, billing-budgets-and-tags]

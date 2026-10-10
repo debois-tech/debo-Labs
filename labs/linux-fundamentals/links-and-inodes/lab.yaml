@@ -1,0 +1,56 @@
+title: Links and inodes
+level: intermediate
+minutes: 12
+summary: See the difference between a symbolic link and a hard link by breaking one on purpose.
+resources:
+- title: ln manual
+  url: https://www.gnu.org/software/coreutils/manual/html_node/ln-invocation.html
+  desc: Hard and symbolic links, with every option.
+steps:
+- id: inode-idea
+  type: lesson
+  title: A name is not the file
+  body: |
+    A file's data lives under an **inode** (a number); a directory entry is just a *name* pointing at it.
+
+    - A **hard link** (`ln a b`) is a second name for the **same inode**. The data is freed only when the last name is gone.
+    - A **symbolic link** (`ln -s a b`) is a tiny file that stores a *path*. If the target disappears, the link **dangles**.
+
+    `ls -li` shows inode numbers and link counts; `stat` shows more. The file `original.txt` is ready.
+- id: soft
+  type: task
+  title: Make a symbolic link
+  body: |
+    Create a symbolic link `soft.txt` that points to `original.txt`.
+  hint: ln -s <target> <linkname>
+- id: hard
+  type: task
+  title: Make a hard link
+  body: |
+    Create a hard link `hard.txt` to `original.txt`.
+  hint: ln without -s.
+- id: count
+  type: task
+  title: Count the names
+  body: |
+    How many names (links) does the file `original.txt` have now? Save just the number in `links.txt`, using `stat`.
+  hint: stat -c %h <file> prints the hard link count.
+- id: inode
+  type: task
+  title: Same inode, two names
+  body: |
+    Save the **inode number** of `hard.txt` in `inode.txt` (`ls -i` or `stat -c %i`).
+  hint: stat -c %i <file>
+- id: break-it
+  type: task
+  title: Delete the original
+  body: |
+    Delete `original.txt`. Then look at `hard.txt` and `soft.txt` (`cat`, `ls -l`): which one still works?
+  hint: rm original.txt, then cat both.
+- id: links-wrap
+  type: lesson
+  title: Which one when?
+  body: |
+    **Symbolic links** can cross file systems and point at directories (`/usr/bin/python -> python3`); they break if the target moves.
+
+    **Hard links** survive renames and deletes of the other name but cannot cross file systems or link directories. Backup tools use them to snapshot cheaply.

@@ -1,0 +1,59 @@
+title: 'IAM: users, groups and permissions'
+level: beginner
+minutes: 12
+summary: Create a user and a group, grant read-only S3 access, test it, and harden the password policy.
+resources:
+- title: IAM security best practices
+  url: https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html
+  desc: 'The official list: least privilege, MFA, roles for workloads.'
+- title: Policy evaluation logic
+  url: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html
+  desc: How explicit Deny, Allow and the implicit deny combine.
+steps:
+- id: iam-idea
+  type: lesson
+  title: Who can do what
+  body: |
+    **IAM** (Identity and Access Management) is global and free. New users can do **nothing** until a policy allows it (an *implicit deny*).
+
+    - **Users**: people or apps. **Groups**: sets of users; attach policies to groups, not one by one.
+    - **Policies** are JSON documents that Allow or Deny actions on resources. An explicit **Deny** always wins.
+    - **Least privilege**: grant only what is needed. Never use the **root user** for daily work; protect it with MFA.
+- id: create-user
+  type: task
+  title: Create a user
+  body: |
+    Create an IAM user named `dev-alice`.
+  hint: aws iam create-user --user-name ...
+- id: create-group
+  type: task
+  title: Create a group
+  body: |
+    Create a group called `developers`.
+  hint: aws iam create-group ...
+- id: join-group
+  type: task
+  title: Put Alice in the group
+  body: |
+    Add `dev-alice` to `developers`.
+  hint: The operation is add-user-to-group.
+- id: attach-policy
+  type: task
+  title: Grant read-only S3 access
+  body: |
+    Attach the AWS managed policy `AmazonS3ReadOnlyAccess` (ARN `arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess`) to the **group**, so everyone in it gets read access.
+  hint: Policies attach to a group with attach-group-policy and a --policy-arn.
+- id: test-access
+  type: task
+  title: Can Alice write to S3?
+  body: |
+    Read-only should mean *no writes*. Ask IAM to simulate: `aws iam simulate-principal-policy` with Alice's ARN (`arn:aws:iam::123456789012:user/dev-alice`) and the action `s3:PutObject`.
+
+    Save the decision (`allowed`, `implicitDeny` or `explicitDeny`) in `decision.txt`.
+  hint: --policy-source-arn <user arn> --action-names s3:PutObject, then --query 'EvaluationResults[0].EvalDecision' --output text.
+- id: password-policy
+  type: task
+  title: Require strong passwords
+  body: |
+    Set the account password policy: at least **12 characters**, requiring **symbols** and **numbers**.
+  hint: update-account-password-policy has --minimum-password-length and --require-... flags.

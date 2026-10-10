@@ -18,6 +18,45 @@ function loginBody() {
     </form></main>`;
 }
 
+const SEAL = `<svg class="cert-seal" viewBox="0 0 120 150" aria-hidden="true" focusable="false">
+  <path d="M34 92 L22 146 L48 132 L62 148 L72 98 Z" fill="rgba(255,255,255,.55)"/><path d="M86 92 L98 146 L72 132 L58 148 L48 98 Z" fill="rgba(255,255,255,.38)"/>
+  <circle cx="60" cy="58" r="50" fill="rgba(255,255,255,.22)"/><circle cx="60" cy="58" r="40" fill="rgba(255,255,255,.34)" stroke="rgba(255,255,255,.7)" stroke-width="2"/>
+  <path d="M42 59 L55 72 L80 44" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// A credential page: the certificate itself, its verification note, and the share actions (certificate.js draws the downloadable image).
+function certificateBody(cert, base) {
+  const date = new Date(cert.issued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  const url = `${base}/certificate/${cert.id}`;
+  return `<main class="cert-page">
+  <div class="cert" id="cert" data-name="${esc(cert.name)}" data-title="${esc(cert.labTitle)}" data-date="${esc(date)}" data-id="${esc(cert.id)}" data-url="${esc(url)}" data-issued="${esc(cert.issued)}">
+    <div class="cert-main">
+      <div class="cert-brand"><img src="/logo/debo-labs-mark.png" alt="" /><span>Debo <b>Labs</b></span></div>
+      <p class="cert-pre">This Certificate Is Proudly Presented To</p>
+      <h1 class="cert-name">${esc(cert.name)}</h1>
+      <p class="cert-pre">For Successfully Completing the Lab</p>
+      <h2 class="cert-title">${esc(cert.labTitle)}</h2>
+      <p class="cert-date">${esc(date)}</p>
+      <p class="cert-id">ID: ${esc(cert.id)}</p>
+      <img class="cert-logo" src="/logo/deboistech-logo.png" alt="deboistech" />
+    </div>
+    <div class="cert-side">
+      <img class="cert-mark" src="/logo/debo-labs-mark-white.png" alt="" />
+      <div class="cert-side-name">Debo Labs</div>
+      <div class="cert-side-kind">Lab Completion<br />Certificate</div>
+      ${SEAL}
+    </div>
+  </div>
+  <p class="cert-verify"><strong>Verified credential.</strong> Credential ID <code>${esc(cert.id)}</code> was issued to ${esc(cert.name)} on ${esc(date)} for finishing every graded task of this lab. Anyone can check it at <a href="${esc(url)}">${esc(url)}</a>.
+  This is a practice-completion certificate from Debo Labs, not an official certification from any vendor.</p>
+  <div class="cert-actions">
+    <button class="btn primary" id="cert-dl" type="button">Download image</button>
+    <a class="btn" id="cert-li" target="_blank" rel="noopener noreferrer" href="#">Add to LinkedIn profile</a>
+    <button class="btn" id="cert-post" type="button">Copy post text</button>
+    <button class="btn" id="cert-copy" type="button">Copy link</button>
+  </div>
+</main>`;
+}
+
 function notFoundBody() {
   return `<div class="wrap"><span class="eyebrow">404</span><h1 class="page-title">Page not found.</h1>
     <p class="lede">That page doesn&rsquo;t exist, or the lab has moved.</p><p style="margin-top:28px"><a class="btn-primary" href="/">Back to the labs <span aria-hidden="true">&rarr;</span></a></p></div>`;
@@ -148,7 +187,7 @@ const STAT = (id, label) => `<div class="stat-cell"><div class="stat-label">${la
 // own session with POST /session. Nothing about GET /lab/... takes a seat.
 function labBody(lab, trackTitle, cfg, next) {
   const data = {
-    track: lab.track, lab: lab.id, title: lab.title, trackUrl: '/t/' + lab.track,
+    track: lab.track, lab: lab.id, title: lab.title, minutes: lab.minutes, trackUrl: '/t/' + lab.track,
     local: cfg.isLocal, gated: !cfg.isLocal && !(cfg.authEnabled && !cfg.accessTokens.length) && (cfg.terminal || !!cfg.backendUrl || cfg.sandbox), backend: cfg.backendUrl, sandbox: !!cfg.sandbox, banner: ASCII_BANNER,
     links: lab.links, resources: lab.resources, next,
     steps: lab.steps.map((s) => ({
@@ -201,4 +240,4 @@ function labBody(lab, trackTitle, cfg, next) {
 }
 
 module.exports = {
-  loginBody, notFoundBody, homeBody, trackBody, labBody, nextLab };
+  certificateBody, loginBody, notFoundBody, homeBody, trackBody, labBody, nextLab };

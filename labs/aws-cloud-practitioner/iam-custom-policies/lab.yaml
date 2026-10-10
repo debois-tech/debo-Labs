@@ -1,0 +1,53 @@
+title: 'IAM: write and test your own policy'
+level: intermediate
+minutes: 14
+summary: Narrow an over-broad policy, attach it, add an explicit Deny, and prove how they combine.
+resources:
+- title: Policies and permissions in IAM
+  url: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html
+  desc: The JSON policy language, with examples.
+- title: Grant least privilege
+  url: https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege
+  desc: How to start broad, then narrow.
+steps:
+- id: policy-anatomy
+  type: lesson
+  title: Anatomy of a policy
+  body: |
+    A policy is JSON with a list of **statements**: `Effect` (Allow/Deny), `Action` (what), `Resource` (on which things, as ARNs).
+
+    `"Action": "s3:*", "Resource": "*"` means *every S3 action on every bucket*: far too much. **Least privilege** names exactly the actions and resources needed.
+
+    The user `uploader` already exists. Your job: let it upload to one bucket and nothing else.
+- id: tighten
+  type: task
+  title: Narrow the policy
+  body: |
+    `upload-policy.json` allows `s3:*` on `*`. Edit it (with `nano`, `sed`...) so it allows only the action **`s3:PutObject`** on the objects of the bucket `debo-uploads-123456789012`, whose ARN is `arn:aws:s3:::debo-uploads-123456789012/*`.
+  hint: Change the Action and the Resource values; keep it one Allow statement.
+- id: create-policy
+  type: task
+  title: Create the managed policy
+  body: |
+    Create an IAM policy named `UploadOnly` from `upload-policy.json` (`--policy-document file://...`).
+  hint: aws iam create-policy needs --policy-name and --policy-document.
+- id: attach
+  type: task
+  title: Attach it to the user
+  body: |
+    Attach `UploadOnly` (ARN `arn:aws:iam::123456789012:policy/UploadOnly`) to the user `uploader`.
+  hint: Users get policies with attach-user-policy.
+- id: deny-delete
+  type: task
+  title: Add a guard-rail with Deny
+  body: |
+    Create a policy `DenyDelete` with one statement: **Deny** `s3:DeleteObject` on `*`. Write it to `deny-delete.json` first, then create the policy and attach it (ARN `arn:aws:iam::123456789012:policy/DenyDelete`) to `uploader`.
+  hint: printf can write a one-line JSON file. Effect must be Deny.
+- id: prove
+  type: task
+  title: Prove the Deny wins
+  body: |
+    Simulate `s3:DeleteObject` for `uploader` (ARN `arn:aws:iam::123456789012:user/uploader`) and save the decision in `proof.txt`.
+
+    Even if some other policy allowed deletes, an **explicit Deny** would still win.
+  hint: 'Same command as before: simulate-principal-policy with --action-names s3:DeleteObject and a --query for EvalDecision.'
