@@ -42,7 +42,7 @@ jobs:
       # The compose file drops every capability the server doesn't need; this catches
       # anything that only works with a default-capability container.
       - run: docker compose up -d --build --wait
-      - run: python3 deploy/smoke-test.py localhost:8080
+      - run: python3 deploy/smoke-test.py localhost:8082
       - if: failure()
         run: docker compose logs
       - if: always()

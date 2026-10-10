@@ -81,6 +81,7 @@
       .then(function (r) {
         if (r.status === 200) { token = r.body.token; connect(); pollTimer(); setInterval(pollTimer, 5000); return; }
         if (r.status === 501) { setStatus('ended', 'preview'); term.write('\r\n\x1b[33m' + (r.body.message || 'Live terminals are not available on this host.') + '\x1b[0m\r\n'); return; }
+        if (r.status === 401 && r.body.error === 'login-required') { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; }
         if (r.status === 401) { var sent = !!savedInvite(); saveInvite(''); return askInvite(sent); }
         busy(r.body.message || 'No seat is free right now.');
       })

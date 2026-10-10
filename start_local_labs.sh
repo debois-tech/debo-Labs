@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-PORT="${LABS_PORT:-8080}"
+PORT="${LABS_PORT:-8082}"
 export LABS_PORT="$PORT"
 URL="http://localhost:$PORT"
 OS="$(uname -s)"

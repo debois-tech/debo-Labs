@@ -8,8 +8,11 @@ services:
     image: debo-labs:server
     environment:
       # hosted profile (the default): invite codes, per-IP limits, tight timeouts
-      LAB_ALLOWED_ORIGINS: ${LAB_ALLOWED_ORIGINS:?set the page origin(s), e.g. https://debo-labs.vercel.app}
-      LAB_ACCESS_TOKENS: ${LAB_ACCESS_TOKENS:?set at least one invite code}
+      # accounts: people sign up on this site and their progress is saved in the labs_data volume
+      LAB_AUTH: "on"
+      AUTH_SECRET: ${AUTH_SECRET:-}      # optional; generated into the volume when empty
+      LAB_ACCESS_TOKENS: ${LAB_ACCESS_TOKENS:-}
+      LAB_ALLOWED_ORIGINS: ${LAB_ALLOWED_ORIGINS:-}
       MAX_SESSIONS: ${MAX_SESSIONS:-8}
     expose: ["8080"]
     cpus: ${LAB_CPUS:-2.0}
@@ -23,6 +26,8 @@ services:
     tmpfs:
       - /tmp:size=64m,mode=1777
       - /sandbox:size=512m,mode=0755,exec
+    volumes:
+      - labs_data:/data
     restart: unless-stopped
 
   caddy:
@@ -38,3 +43,4 @@ services:
 
 volumes:
   caddy_data:
+  labs_data:
