@@ -90,7 +90,7 @@ MIN_REPLICA=1 MAX_REPLICA=8 ./03-deploy.sh
 
 - Per-IP limit: `MAX_SESSIONS_PER_IP` (default 3, counts unconnected tokens) so one bot can't burn every
   seat. It's the *rightmost* `X-Forwarded-For` entry (the ALB's). Campus/classroom NATs share an address —
-  raise it if a cohort is behind one. The image provides 16 learner users, so `MAX_SESSIONS` above 16 needs more users in the `Dockerfile`.
+  raise it if a cohort is behind one. The image provides 60 learner users, so `MAX_SESSIONS` above 60 needs more users in the `Dockerfile`.
 - Watch seat pressure per replica at `/stats` (`sessions`, `maxSessions`).
 - Sessions are in-memory per replica; ALB stickiness (30 min) keeps a visitor on theirs. A replica
   replacement drops its sessions — visitors just start a new lab.

@@ -64,3 +64,26 @@
 .invite-row { display: flex; gap: 10px; }
 .invite input { flex: 1; min-width: 0; background: transparent; color: var(--text); border: 1px solid var(--rule2); border-radius: 999px; padding: 9px 16px; font: 14px var(--mono); }
 .invite input:focus { outline: none; border-color: var(--brand); }
+
+/* answer reveal (after repeated misses) and the completion screen */
+.step-answer { margin-top: 14px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.step-answer .answer-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.step-answer pre { margin: 0; }
+.done-mark { font: 600 26px var(--display); letter-spacing: -.02em; margin: 0 0 6px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.done-lede { margin: 0 0 10px; font-size: 16px; }
+.done-sub { margin: 12px 0 6px; color: var(--muted); font-size: 13px; }
+.done-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.done-list li { padding-left: 22px; position: relative; font-size: 14px; }
+.done-list li::before { content: "\2713"; position: absolute; left: 0; color: var(--ok); }
+@media (prefers-reduced-motion: no-preference) { .done-mark, .done-lede, .done-list { animation: doneIn .4s ease both; } @keyframes doneIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } } }
+
+/* shareable completion card */
+.share { margin-top: 18px; }
+.share-card { border: 1px solid var(--rule2); border-radius: 14px; padding: 20px 22px; background: linear-gradient(135deg, #04100c, #0a2a1e); }
+.sc-top { display: flex; align-items: center; gap: 10px; font: 600 15px var(--display); } .sc-top img { width: 28px; height: 28px; } .sc-top b { color: var(--brand2); font-weight: 600; }
+.sc-kicker { margin-top: 18px; font: 600 11px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brand); }
+.sc-title { margin-top: 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.02em; }
+.sc-meta { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.sc-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); } .sc-name { color: var(--text); font-weight: 600; }
+.share-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; } .share-actions .btn { text-decoration: none; }
+.share-note { margin: 8px 0 0; font-size: 12px; color: var(--faint); }

@@ -9,6 +9,9 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 ## [Unreleased]
 
 ### Added
+- **Show answer after 3 failed checks.** Press Check and miss a task three times and a *Show answer* button appears with the commands that solve it. The server counts the misses per task and releases the answer only then (`POST /lab/answer`).
+- **A completion card you can share.** Finishing a lab shows a congratulations screen with the tasks you solved and a card (your name if you are logged in, the lab, the date). *Download image* saves a 1200x627 PNG, *Copy LinkedIn post* copies ready-made text with hashtags, and *Share on LinkedIn* opens the share page.
+- **An offline `aws` practice CLI** in the image (`tools/aws-sim`, see `docs/aws-simulator.md`) for the upcoming AWS Cloud Practitioner labs: IAM, S3, EC2, CloudWatch, SNS, Budgets and Cost Explorer against a simulated account kept in the learner's home. New dependency: `jmespath` (for `--query`).
 - **Accounts and saved progress** (`LAB_AUTH=on`). People create an account or log in at `/login`; finished labs are saved to the account and follow them across devices (a browser's existing progress is merged in on login). Starting a lab then needs a login, and invite codes become optional. Passwords are scrypt-hashed, logins are signed HttpOnly cookies, and accounts live in a JSON file under `DATA_DIR` (`/data` in the image). Off by default, so the local app stays account-free.
 - **Preview mode for serverless hosts** (`api/index.js`, `vercel.json`, or `LAB_TERMINAL=off`). The pages render, but no shells start: a lab shows that live terminals need Docker.
   `node-pty` is now an optional dependency, loaded only when a terminal starts.
@@ -25,6 +28,8 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - The progress marker no longer hides behind the active step dot.
 
 ### Changed
+- **No session time limit on `deploy/vps`** (`LAB_HARD_CAP_MIN=0`; any server can use `0` to turn the limit off). Idle sessions are still closed, after 30 minutes by default there (`LAB_IDLE_MIN`), to free the seat.
+- **Capacity: 50 learners at once** on the `deploy/vps` server (was 8). The image now has 60 learner users (`lab0..lab59`, was 40), and the server's per-IP limit, memory (6 GB), process and scratch-disk limits were raised to match. Size the VM for it: 2 vCPU / 8 GB handles 50 mostly idle shells; heavy commands from many learners at once will be slow.
 - **Rebranded as Debo Labs**, a Deboistech project: new name, the Deboistech turtle logo in the header, an emerald gradient theme, and Sora for headings. Anything
   that named the previous owner or brand was removed from the code, docs, labs and deploy notes. The terminal prompt mark replaces the old rocket, and the welcome banner
   in the terminal now reads DEBO LABS.
@@ -35,6 +40,7 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
   The image grows by about 80 MB uncompressed, mostly the `vim` runtime files (36 MB) and the manual pages.
 
 ### Upgrade notes
+- **Rebuild the image** (`docker compose up -d --build` in `deploy/vps`): it now has 60 learner users and the `aws` practice CLI. The new limits (50 seats, no session time limit, 30-minute idle timeout) are defaults in `deploy/vps/docker-compose.yml`; set `MAX_SESSIONS`, `LAB_HARD_CAP_MIN` or `LAB_IDLE_MIN` in `.env` to override them.
 - **Local:** rebuild the image once (`./start_local_labs.sh` does it). Progress you saved in your browser is stored under a new key, so finished labs show as not done again.
 - **Hosted:** `/roadmap`, `/videos` and `/upcoming` now return 404; update any bookmark or monitor that points at them (`deploy/smoke-test.py` is already updated). The GitHub repo must move to its new
   owner and name before the next deploy; see AGENTS.md on the OIDC trust policy.

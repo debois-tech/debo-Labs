@@ -13,11 +13,14 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:-}      # optional; generated into the volume when empty
       LAB_ACCESS_TOKENS: ${LAB_ACCESS_TOKENS:-}
       LAB_ALLOWED_ORIGINS: ${LAB_ALLOWED_ORIGINS:-}
-      MAX_SESSIONS: ${MAX_SESSIONS:-8}
+      LAB_HARD_CAP_MIN: ${LAB_HARD_CAP_MIN:-0}      # 0 = no overall session time limit
+      LAB_IDLE_MIN: ${LAB_IDLE_MIN:-30}             # a session with no typing for this long is closed to free its seat
+      MAX_SESSIONS: ${MAX_SESSIONS:-50}              # learners at once (the image has 60 learner users)
+      MAX_SESSIONS_PER_IP: ${MAX_SESSIONS_PER_IP:-50}  # a campus or class often sits behind one address
     expose: ["8080"]
     cpus: ${LAB_CPUS:-2.0}
-    mem_limit: ${LAB_MEMORY:-2g}
-    pids_limit: 1024
+    mem_limit: ${LAB_MEMORY:-6g}
+    pids_limit: 4096
     cap_drop: [ALL]
     cap_add: [SETUID, SETGID, KILL, CHOWN, DAC_OVERRIDE]
     security_opt:
@@ -25,7 +28,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
-      - /sandbox:size=512m,mode=0755,exec
+      - /sandbox:size=1g,mode=0755,exec
     volumes:
       - labs_data:/data
     restart: unless-stopped

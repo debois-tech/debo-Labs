@@ -19,6 +19,7 @@ const XTERM_DIR = path.join(__dirname, '..', 'node_modules', '@xterm');
 const BASHRC = path.join(__dirname, 'lab.bashrc');
 const MAX_WS_MESSAGE_BYTES = 64 * 1024;
 const MAX_JSON_BODY_BYTES = 4 * 1024;
+const ANSWER_AFTER = 3;   // failed checks of one task before its answer can be shown
 
 // --- Request guards -------------------------------------------------------------
 // This app hands out a real shell, so a web page the visitor happens to have open
@@ -205,7 +206,7 @@ function createApp(opts = {}) {
 
     if (req.method === 'GET' && p === '/session/remaining') {
       const s = store.get(url.searchParams.get('token'));
-      const remainingSec = s ? Math.max(0, Math.round((s.createdAt + cfg.hardCapMs - Date.now()) / 1000)) : 0;
+      const remainingSec = !cfg.hardCapMs ? null : (s ? Math.max(0, Math.round((s.createdAt + cfg.hardCapMs - Date.now()) / 1000)) : 0);   // null = no time limit
       return json(res, 200, { remainingSec });
     }
 
@@ -221,7 +222,26 @@ function createApp(opts = {}) {
         const r = await sandbox.runCheck(step.checkFile, {
           home: session.home, uid: session.uid, shellPid: session.shellPid, historyFile: historyOf(token),
         });
-        json(res, 200, { pass: r.pass, message: r.pass ? '' : r.message });
+        // Failed checks are counted per step, server-side: after ANSWER_AFTER misses the learner may ask for the answer.
+        session.fails = session.fails || {};
+        if (!r.pass) session.fails[step.id] = (session.fails[step.id] || 0) + 1;
+        json(res, 200, { pass: r.pass, message: r.pass ? '' : r.message, fails: session.fails[step.id] || 0, answerAfter: ANSWER_AFTER });
+      });
+    }
+
+    // The answer to a task: the commands in solutions/<step>.sh, released only after ANSWER_AFTER failed checks of that step.
+    if (req.method === 'POST' && p === '/lab/answer') {
+      if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
+      return readJson(req, res, ({ token, stepId }) => {
+        const session = store.get(token);
+        if (!session) return json(res, 403, { error: 'invalid session' });
+        const lab = findLab(session.meta.track, session.meta.lab);
+        const step = lab && lab.steps.find((s) => s.id === stepId && s.type === 'task');
+        if (!step) return json(res, 404, { error: 'unknown step' });
+        if (((session.fails || {})[step.id] || 0) < ANSWER_AFTER) return json(res, 403, { error: 'not-yet', answerAfter: ANSWER_AFTER });
+        let lines = [];
+        try { lines = fs.readFileSync(step.solutionFile, 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#')); } catch { /* unreadable */ }
+        json(res, 200, { answer: lines });
       });
     }
 
@@ -267,7 +287,7 @@ function createApp(opts = {}) {
     }
     store.markConnected(token, { shellPid: shell.pid, home });
 
-    const hardTimer = setTimeout(() => ws.close(4000, 'session time limit reached'), cfg.hardCapMs);
+    const hardTimer = cfg.hardCapMs > 0 ? setTimeout(() => ws.close(4000, 'session time limit reached'), cfg.hardCapMs) : null;
     let idleTimer = setTimeout(() => ws.close(4000, 'idle timeout'), cfg.idleMs);
     const resetIdle = () => {
       store.touch(token);
