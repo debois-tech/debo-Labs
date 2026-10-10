@@ -68,6 +68,7 @@ function createAuth({ dir, secret, secure }) {
     email = String(email || '').trim().toLowerCase();
     password = String(password || '');
     name = String(name || '').trim().slice(0, 60);
+    if (!name) return { status: 400, error: 'Enter your name.' };
     if (!EMAIL_RE.test(email)) return { status: 400, error: 'Enter a valid email address.' };
     if (password.length < 8 || password.length > 200) return { status: 400, error: 'Use a password of at least 8 characters.' };
     if (byEmail(email)) return { status: 409, error: 'An account with this email already exists. Log in instead.' };

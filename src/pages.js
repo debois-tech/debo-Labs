@@ -10,7 +10,7 @@ function loginBody() {
     <p class="lede">An account saves your progress across devices and lets you start labs on this server.</p>
     <div class="auth-tabs" role="tablist"><button type="button" role="tab" id="tab-login" aria-selected="true">Log in</button><button type="button" role="tab" id="tab-signup" aria-selected="false">Create account</button></div>
     <form id="auth-form" class="auth-form" novalidate>
-      <label id="name-row" hidden>Name <span class="faint">(optional)</span><input name="name" autocomplete="name" maxlength="60" /></label>
+      <label id="name-row" hidden>Name<input name="name" autocomplete="name" maxlength="60" /></label>
       <label>Email<input name="email" type="email" autocomplete="email" required /></label>
       <label>Password<input name="password" type="password" autocomplete="current-password" minlength="8" required /></label>
       <p class="auth-error" id="auth-error" role="alert"></p>

@@ -21,6 +21,7 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - The image now has 40 learner users (`lab0..lab39`, was 16) so up to 40 learners can share one server.
 
 ### Fixed
+- The login page no longer shows the Name field on the Log in tab; it appears only when creating an account, and a name is now required there.
 - The progress marker no longer hides behind the active step dot.
 
 ### Changed
