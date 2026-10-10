@@ -97,6 +97,7 @@ details > summary::before { content: '+'; display: inline-block; width: 1.1em; c
 .auth-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 0; color: var(--muted); font: 500 14px var(--sans); cursor: pointer; }
 .auth-tabs button[aria-selected="true"] { color: var(--text); border-color: var(--brand); }
 .auth-form { display: grid; gap: 16px; margin-top: 20px; }
+.auth-form [hidden] { display: none; }
 .auth-form label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .auth-form input { background: var(--panel); border: 1px solid var(--rule2); border-radius: 8px; padding: 10px 12px; color: var(--text); font: 15px var(--sans); }
 .auth-form input:focus { outline: none; border-color: var(--brand); }
