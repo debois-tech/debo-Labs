@@ -316,3 +316,15 @@ test('sandbox hosting: the lab page is told to ask the function for the server, 
     assert.equal((await mint(app, ...EB)).status, 200, 'a session still works when this host also has shells (the page, not the server, decides to look elsewhere)');
   } finally { app.stop(); }
 });
+
+test('with no session time limit (hardCapMs 0) /session/remaining reports null so the page shows its soft timer', async () => {
+  const app = await start({ hardCapMs: 0 });
+  try {
+    const m = await mint(app, ...EB);
+    assert.equal(m.status, 200);
+    const r = await get(app, '/session/remaining?token=' + m.json.token);
+    assert.equal(r.status, 200);
+    assert.equal(r.json.remainingSec, null);
+    assert.match((await get(app, '/lab/' + EB.join('/'))).body, /"minutes":15/, 'the lab page carries the suggested minutes for the soft timer');
+  } finally { app.stop(); }
+});

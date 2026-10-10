@@ -1,0 +1,46 @@
+title: 'Disk usage: du, df and sizes'
+level: beginner
+minutes: 10
+summary: Measure folders, find the biggest file, sort sizes and count files.
+resources:
+- title: du invocation
+  url: https://www.gnu.org/software/coreutils/manual/html_node/du-invocation.html
+  desc: Options for measuring disk usage.
+steps:
+- id: disk-idea
+  type: lesson
+  title: Where did the space go?
+  body: |
+    `du` (disk usage) adds up folders: `du -sk dir` is one total in KB, `du -h` prints human-readable sizes (`300K`). `df` reports whole file systems. `sort -h` orders human-readable sizes; `find -type f` lists files; `wc -l` counts lines.
+
+    A folder `stuff/` has files of different sizes, including a sub-folder.
+- id: total-kb
+  type: task
+  title: Size of a folder
+  body: |
+    Save the total size of `stuff/` **in KB**, just the number, in `total-kb.txt`.
+  hint: du -sk gives KB; cut -f1 keeps the first column.
+- id: biggest
+  type: task
+  title: The biggest file
+  body: |
+    Save the **path of the largest file** under `stuff/` in `biggest.txt`.
+  hint: find -type f -printf "%s %p\n" | sort -rn | head -1 gives size and path.
+- id: sorted-sizes
+  type: task
+  title: Human-readable, smallest first
+  body: |
+    List the size of each item **directly inside** `stuff/` in human-readable form, **smallest first**, in `sizes.txt` (`du -h stuff/*` sorted with `sort -h`).
+  hint: du -h stuff/* | sort -h
+- id: count-files
+  type: task
+  title: How many files?
+  body: |
+    Count the **regular files** under `stuff/` (including the sub-folder) and save just the number in `nfiles.txt`.
+  hint: find stuff -type f | wc -l
+- id: fs-type
+  type: task
+  title: What backs the root?
+  body: |
+    Which **file system type** holds `/`? Save its name (from `df --output=fstype /`, without the header) in `fstype.txt`.
+  hint: Use tail -1 to drop the header line.

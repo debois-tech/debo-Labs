@@ -1,0 +1,2 @@
+aws ec2 authorize-security-group-ingress --group-id $(aws ec2 describe-security-groups --group-names web-sg --query 'SecurityGroups[0].GroupId' --output text) --protocol tcp --port 22 --cidr 203.0.113.0/24
+aws ec2 authorize-security-group-ingress --group-id $(aws ec2 describe-security-groups --group-names web-sg --query 'SecurityGroups[0].GroupId' --output text) --protocol tcp --port 80 --cidr 0.0.0.0/0

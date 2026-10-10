@@ -1,0 +1,1 @@
+aws cloudwatch put-metric-alarm --alarm-name web-1-cpu-high --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --evaluation-periods 2 --threshold 80 --comparison-operator GreaterThanThreshold --dimensions Name=InstanceId,Value=$(cat instance-id.txt) --alarm-actions arn:aws:sns:ap-south-1:123456789012:ops-alerts

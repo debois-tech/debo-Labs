@@ -1,0 +1,5 @@
+. "$LAB_LIB"
+[ -s eu-azs.txt ] || fail "eu-azs.txt is missing or empty."
+diff eu-azs.txt <(aws ec2 describe-availability-zones --region eu-west-1 --query 'AvailabilityZones[].ZoneName' --output text 2>/dev/null | tr '\t' '\n') >/dev/null || fail "eu-azs.txt should list the zones of eu-west-1, one per line."
+[ "$(sed -n 's/^region *= *//p' .aws/config)" = "ap-south-1" ] || fail "Keep ap-south-1 as your default Region."
+ran_re -- '--region[ =]eu-west-1' || fail "Use the --region option on the command."

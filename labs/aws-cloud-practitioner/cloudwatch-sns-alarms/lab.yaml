@@ -1,0 +1,49 @@
+title: CloudWatch alarms that email you
+level: intermediate
+minutes: 12
+summary: Create a notification topic, subscribe to it, and wire a CPU alarm to it.
+resources:
+- title: Using Amazon CloudWatch alarms
+  url: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html
+  desc: 'Alarm that sends an email: the official walkthrough.'
+- title: What is Amazon SNS?
+  url: https://docs.aws.amazon.com/sns/latest/dg/welcome.html
+  desc: Topics, subscriptions and delivery protocols.
+steps:
+- id: monitor-idea
+  type: lesson
+  title: Know before your users do
+  body: |
+    **CloudWatch** collects *metrics* (CPU, network, ...) and raises **alarms** when a metric crosses a threshold. An alarm can notify an **SNS topic** (publish/subscribe messaging), which then emails or texts the subscribers.
+
+    An alarm is in state **OK**, **ALARM** or **INSUFFICIENT_DATA**. A server `web-1` is already running; its id is in `instance-id.txt`.
+- id: topic
+  type: task
+  title: Create a topic
+  body: |
+    Create an SNS topic named `ops-alerts`.
+  hint: aws sns create-topic --name ...
+- id: subscribe
+  type: task
+  title: Subscribe an email address
+  body: |
+    Subscribe `ops@example.com` to the topic (protocol `email`). Real subscribers must confirm the email before they get messages.
+  hint: aws sns subscribe needs --topic-arn, --protocol and --notification-endpoint.
+- id: alarm
+  type: task
+  title: Alarm on high CPU
+  body: |
+    Create an alarm **`web-1-cpu-high`**: the **Average** of `CPUUtilization` (namespace `AWS/EC2`, dimension `InstanceId` = the id in `instance-id.txt`) over **300-second** periods is **greater than 80** for **2** periods. Its alarm action is the `ops-alerts` topic.
+  hint: 'put-metric-alarm: --comparison-operator GreaterThanThreshold, --evaluation-periods, --period, --threshold, --dimensions Name=InstanceId,Value=..., --alarm-actions <topic arn>.'
+- id: test-alarm
+  type: task
+  title: Trigger a test
+  body: |
+    Alarms start as INSUFFICIENT_DATA. Force it into **ALARM** with `set-alarm-state` (a standard way to test the notification path), then save the alarm's `StateValue` from `describe-alarms` into `alarm-state.txt`.
+  hint: set-alarm-state needs --alarm-name, --state-value ALARM and a --state-reason.
+- id: delete-alarm
+  type: task
+  title: Remove the test alarm
+  body: |
+    Delete the `web-1-cpu-high` alarm (alarms cost a little each month, so tidy up).
+  hint: aws cloudwatch delete-alarms --alarm-names ...

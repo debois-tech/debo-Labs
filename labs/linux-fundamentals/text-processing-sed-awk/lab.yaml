@@ -1,0 +1,49 @@
+title: Text processing with sed and awk
+level: intermediate
+minutes: 15
+summary: Replace, delete, slice and total text with sed, awk, sort and uniq.
+resources:
+- title: GNU sed manual
+  url: https://www.gnu.org/software/sed/manual/sed.html
+  desc: Every sed command, with examples.
+- title: The GNU awk user guide
+  url: https://www.gnu.org/software/gawk/manual/gawk.html
+  desc: From one-liners to full programs.
+steps:
+- id: stream-editing
+  type: lesson
+  title: Edit streams, not files
+  body: |
+    **`sed`** edits a stream line by line (`sed 's/old/new/g'` substitutes). **`awk`** splits each line into fields (`$1`, `$2`, ... `$NF`) and runs a small program on it; `-F,` sets the separator.
+
+    Combine them with `sort`, `uniq -c` and `head` to answer questions about logs in one line. Files here: `app.log`, `users.csv`, `access.log`, `config.conf`.
+- id: sed-replace
+  type: task
+  title: Substitute with sed
+  body: |
+    Write a copy of `app.log` named `app-fixed.log` in which every `ERROR` is replaced by `FAILED` (the original stays unchanged).
+  hint: sed 's/OLD/NEW/g' file > newfile
+- id: awk-column
+  type: task
+  title: Pick a column
+  body: |
+    `users.csv` has the columns `id,name,city`. Save just the **city** column (without the header line) in `cities.txt`.
+  hint: awk -F, sets the separator; NR > 1 skips the first line.
+- id: awk-sum
+  type: task
+  title: Add up a column
+  body: |
+    In `access.log` the **last** field of each line is the number of bytes sent. Save the **total** in `total.txt`.
+  hint: 'awk can accumulate: { s += $NF } END { print s }'
+- id: clean-config
+  type: task
+  title: Strip comments and blank lines
+  body: |
+    Write `clean.conf`: `config.conf` without the lines that start with `#` and without empty lines.
+  hint: sed -e '/pattern/d' deletes matching lines; you can give it more than one -e.
+- id: top-ips
+  type: task
+  title: The three busiest clients
+  body: |
+    The **first** field of `access.log` is the client IP. Save the **three IPs with the most requests** in `top3.txt`, each line as `<count> <ip>`, busiest first.
+  hint: cut or awk to get the IPs, then sort | uniq -c | sort -rn | head -3.

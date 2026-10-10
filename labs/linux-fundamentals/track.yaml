@@ -8,3 +8,16 @@ labs:
   - pipes-and-search
   - shell-scripting-basics
   - linux-in-action
+  - processes-and-jobs
+  - text-processing-sed-awk
+  - find-and-xargs
+  - archives-and-compression
+  - links-and-inodes
+  - environment-and-path
+  - permissions-chmod-umask
+  - redirection-and-streams
+  - functions-loops-exit-codes
+  - json-with-jq
+  - regular-expressions-with-grep
+  - dates-and-time
+  - disk-usage-and-sizes

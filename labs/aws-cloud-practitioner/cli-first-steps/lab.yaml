@@ -1,0 +1,66 @@
+title: The AWS CLI, Regions and zones
+level: beginner
+minutes: 10
+summary: Configure the CLI, find out who you are, and explore Regions and Availability Zones.
+resources:
+- title: What is the AWS CLI?
+  url: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
+  desc: Installing, configuring and using the real CLI.
+- title: AWS global infrastructure
+  url: https://aws.amazon.com/about-aws/global-infrastructure/
+  desc: Regions, Availability Zones and edge locations on a map.
+steps:
+- id: what-is-cli
+  type: lesson
+  title: Everything in AWS is an API call
+  body: |
+    The **AWS CLI** turns commands into API calls: `aws <service> <operation> --options`. The console, SDKs and CLI all call the same APIs.
+
+    This `aws` is an **offline practice version** of the AWS CLI: same commands, flags and JSON, but nothing leaves this container and no account is billed.
+
+    AWS is organised into **Regions** (separate geographic areas, e.g. `ap-south-1` Mumbai) and each Region has several **Availability Zones** (AZs): isolated data centres a few km apart. Your resources live in a Region, and you choose one on every call.
+- id: configure
+  type: task
+  title: Give the CLI your credentials
+  body: |
+    The CLI knows nothing about you yet: run `aws sts get-caller-identity` and read the error.
+
+    Your keys are in `aws-keys.txt`. Save them and the default Region (`ap-south-1`) with `aws configure` (it asks four questions) or `aws configure set`.
+  hint: aws configure asks for the access key ID, secret key, default region and output format. `aws configure set <name> <value>` sets one at a time.
+- id: whoami
+  type: task
+  title: Find your account ID
+  body: |
+    Run `aws sts get-caller-identity`. It returns who you are, your account and your ARN.
+
+    Save **only the 12-digit account ID** (no quotes, no JSON) in `account.txt`.
+  hint: Use --query to pick one field and --output text to drop the JSON quotes, then redirect with >.
+- id: regions
+  type: task
+  title: List every Region
+  body: |
+    AWS keeps adding Regions. Ask EC2 for the list with `aws ec2 describe-regions` and save the **Region names**, one per line, in `regions.txt`.
+  hint: describe-regions returns JSON; --query 'Regions[].RegionName' picks the names, and text output separates them with tabs (tr can turn tabs into newlines).
+- id: azs
+  type: task
+  title: Count the zones in your Region
+  body: |
+    How many Availability Zones does your default Region (`ap-south-1`) have? Find out with `aws ec2 describe-availability-zones` and write **just the number** to `az-count.txt`.
+  hint: 'The JMESPath function length() counts a list: --query ''length(AvailabilityZones)''.'
+- id: other-region
+  type: task
+  title: Look at a different Region
+  body: |
+    Without changing your default Region, list the Availability Zone **names** in `eu-west-1` (Ireland), one per line, in `eu-azs.txt`.
+
+    A single command can target another Region with `--region`.
+  hint: Add --region eu-west-1 to the same describe-availability-zones call.
+- id: wrap
+  type: lesson
+  title: Why Regions and zones matter
+  body: |
+    - **Region**: where your data lives (laws, latency, price). Services are Regional unless stated otherwise (IAM is global).
+    - **Availability Zone**: spread a workload across two or more AZs to survive a data-centre failure.
+    - **Edge locations** (CloudFront) sit closer to users and are separate from Regions.
+
+    Next: control *who may do what* with IAM.

@@ -148,7 +148,7 @@ const STAT = (id, label) => `<div class="stat-cell"><div class="stat-label">${la
 // own session with POST /session. Nothing about GET /lab/... takes a seat.
 function labBody(lab, trackTitle, cfg, next) {
   const data = {
-    track: lab.track, lab: lab.id, title: lab.title, trackUrl: '/t/' + lab.track,
+    track: lab.track, lab: lab.id, title: lab.title, minutes: lab.minutes, trackUrl: '/t/' + lab.track,
     local: cfg.isLocal, gated: !cfg.isLocal && !(cfg.authEnabled && !cfg.accessTokens.length) && (cfg.terminal || !!cfg.backendUrl || cfg.sandbox), backend: cfg.backendUrl, sandbox: !!cfg.sandbox, banner: ASCII_BANNER,
     links: lab.links, resources: lab.resources, next,
     steps: lab.steps.map((s) => ({

@@ -1,0 +1,3 @@
+. "$LAB_LIB"
+[ "$(sim '(a => a && a.MetricName === "CPUUtilization" && a.Namespace === "AWS/EC2" && a.Statistic === "Average" && a.Period === 300 && a.EvaluationPeriods === 2 && a.Threshold === 80 && a.ComparisonOperator === "GreaterThanThreshold" && a.AlarmActions.includes("arn:aws:sns:ap-south-1:123456789012:ops-alerts") ? "yes" : "no")(s.cloudwatch.alarms["ap-south-1/web-1-cpu-high"])')" = yes ] || fail "Check the metric, statistic, period, threshold, evaluation periods and the alarm action."
+[ "$(sim '(a => a.Dimensions.some(d => d.Name === "InstanceId" && d.Value === "'"$(tr -d '[:space:]' < instance-id.txt)"'") ? "yes" : "no")(s.cloudwatch.alarms["ap-south-1/web-1-cpu-high"])')" = yes ] || fail "The alarm should watch the InstanceId in instance-id.txt."

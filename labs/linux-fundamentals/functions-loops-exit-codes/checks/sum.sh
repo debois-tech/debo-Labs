@@ -1,0 +1,5 @@
+. "$LAB_LIB"
+[ -x sum.sh ] || fail "sum.sh must exist and be executable."
+[ "$(./sum.sh 1 2 3 2>/dev/null)" = 6 ] || fail "./sum.sh 1 2 3 should print 6."
+[ "$(./sum.sh 10 20 2>/dev/null)" = 30 ] || fail "./sum.sh 10 20 should print 30."
+[ "$(./sum.sh 2>/dev/null)" = 0 ] || fail "With no arguments it should print 0."

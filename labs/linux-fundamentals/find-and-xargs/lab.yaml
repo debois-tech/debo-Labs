@@ -1,0 +1,51 @@
+title: 'Find files: find, grep -r and xargs'
+level: intermediate
+minutes: 14
+summary: Locate files by name, size and age, search inside them, and act on the results.
+resources:
+- title: GNU findutils manual
+  url: https://www.gnu.org/software/findutils/manual/html_mono/find.html
+  desc: All the find tests and actions.
+- title: grep manual
+  url: https://www.gnu.org/software/grep/manual/grep.html
+  desc: Patterns, recursion and output control.
+steps:
+- id: find-idea
+  type: lesson
+  title: Search by what a file is
+  body: |
+    `find <where> <tests> <action>` walks a tree. Tests include `-name '*.log'`, `-type f`, `-size +100k` and `-mtime +30` (modified more than 30 days ago). The default action prints the path; `-delete` removes.
+
+    `grep -rl TEXT dir` lists files **containing** TEXT. `xargs` turns a list on stdin into arguments (`find ... | xargs wc -l`).
+
+    A `project/` folder has been prepared. Always list matches **before** you delete.
+- id: by-name
+  type: task
+  title: Find by name
+  body: |
+    List every `*.log` file under `project/` (paths as `find` prints them) in `logs.txt`.
+  hint: find project -name '*.log'
+- id: by-size
+  type: task
+  title: Find the big files
+  body: |
+    List the **regular files** under `project/` larger than **100 KB** in `big.txt`.
+  hint: Combine -type f with -size +100k.
+- id: by-age
+  type: task
+  title: Find the stale files
+  body: |
+    List the files under `project/` last modified **more than 30 days ago** in `old.txt`.
+  hint: -mtime +30 means older than 30 days.
+- id: grep-todo
+  type: task
+  title: Search inside files
+  body: |
+    List the files under `project/` that **contain the word TODO** in `todo.txt`, one path per line, sorted.
+  hint: grep -rl searches recursively and prints only the file names.
+- id: delete-tmp
+  type: task
+  title: Delete the temp files
+  body: |
+    Delete every `*.tmp` file under `project/`. Nothing else may be removed.
+  hint: find ... -name ... -delete (check with -print first).

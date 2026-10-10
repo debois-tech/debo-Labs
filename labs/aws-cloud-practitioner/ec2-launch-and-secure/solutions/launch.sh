@@ -1,0 +1,1 @@
+aws ec2 run-instances --image-id $(cat ami.txt) --instance-type t3.micro --key-name debo-key --security-group-ids $(aws ec2 describe-security-groups --group-names web-sg --query 'SecurityGroups[0].GroupId' --output text) --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=web-1}]'

@@ -1,0 +1,51 @@
+title: Processes, jobs and signals
+level: beginner
+minutes: 12
+summary: Run work in the background, find it, inspect it, lower its priority and stop it.
+resources:
+- title: The /proc filesystem
+  url: https://docs.kernel.org/filesystems/proc.html
+  desc: What lives under /proc, where ps gets its facts.
+- title: Standard signals
+  url: https://www.gnu.org/software/libc/manual/html_node/Standard-Signals.html
+  desc: Every signal and its default action.
+steps:
+- id: what-is-process
+  type: lesson
+  title: A program that is running
+  body: |
+    Every running program is a **process** with a **PID**. Your shell runs commands in the foreground; add `&` to run one in the **background** and get the prompt back.
+
+    Useful tools: `jobs` (this shell's background jobs), `ps` (snapshot of processes), `pgrep` (find PIDs by name), `kill` (send a **signal**; the default is SIGTERM, a polite request to exit), `nice` (start with lower priority).
+
+    `worker.sh` in your home is a harmless script that loops forever.
+- id: start-bg
+  type: task
+  title: Start it in the background
+  body: |
+    Run `./worker.sh` in the **background** so you keep your prompt.
+  hint: Put & at the end of the command line.
+- id: find-pid
+  type: task
+  title: Find its PID
+  body: |
+    Find the PID of `worker.sh` with `pgrep -x worker.sh` and save **only the PID** in `pid.txt`.
+  hint: pgrep prints matching PIDs; redirect with >.
+- id: ps-inspect
+  type: task
+  title: Inspect it with ps
+  body: |
+    Use `ps -o stat=,cmd= -p <PID>` (take the PID from `pid.txt`) and save the output in `status.txt`.
+  hint: You can use $(cat pid.txt) inside the command.
+- id: stop-it
+  type: task
+  title: Stop it politely
+  body: |
+    Send worker.sh the default termination signal (SIGTERM) with `kill` and the PID from `pid.txt`.
+  hint: kill <PID>  (no -9 needed).
+- id: nice-start
+  type: task
+  title: Start it again, politely
+  body: |
+    Start `worker.sh` in the background again, this time with a **nice value of 10** (lower priority than normal), using `nice -n 10`.
+  hint: nice -n 10 <command> &

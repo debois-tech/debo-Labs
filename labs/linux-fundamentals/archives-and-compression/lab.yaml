@@ -1,0 +1,48 @@
+title: 'Archives and compression: tar and gzip'
+level: beginner
+minutes: 10
+summary: Bundle a folder, peek inside, restore it elsewhere, exclude files and compress.
+resources:
+- title: GNU tar manual
+  url: https://www.gnu.org/software/tar/manual/tar.html
+  desc: Every option, with worked examples.
+steps:
+- id: tar-idea
+  type: lesson
+  title: One file out of many
+  body: |
+    **`tar`** bundles files into one archive; **`gzip`** compresses. They are combined as `.tar.gz`. Flags to remember: `c` create, `x` extract, `t` list, `z` gzip, `f` file name, `-C dir` change directory.
+
+    `tar czf backup.tar.gz data` creates; `tar tzf backup.tar.gz` lists without extracting; `tar xzf backup.tar.gz -C restore` extracts into `restore/`.
+
+    A `data/` folder is ready.
+- id: create
+  type: task
+  title: Create an archive
+  body: |
+    Create a gzip-compressed archive `backup.tar.gz` of the folder `data`.
+  hint: tar czf <archive> <folder>
+- id: list
+  type: task
+  title: Look inside
+  body: |
+    List the contents of `backup.tar.gz` **without extracting it** and save the listing in `contents.txt`.
+  hint: tar tzf <archive>
+- id: restore
+  type: task
+  title: Restore it somewhere else
+  body: |
+    Make a folder `restore` and extract the archive **into it**, leaving `data/` untouched.
+  hint: mkdir restore, then tar xzf ... -C restore
+- id: exclude
+  type: task
+  title: Leave the logs out
+  body: |
+    Create `lean.tar.gz` of `data` **excluding every `*.log` file**.
+  hint: tar has --exclude='*.log'.
+- id: gzip-keep
+  type: task
+  title: Compress one file, keep the original
+  body: |
+    Compress `data/notes.txt` with gzip so that you have **both** `data/notes.txt.gz` and the original `data/notes.txt`.
+  hint: gzip normally replaces the file; -k keeps it.

@@ -99,7 +99,7 @@
     var wsHost = API ? new URL(API).host : location.host;
     if (API) proto = new URL(API).protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(proto + '//' + wsHost + '/ws?token=' + token);
-    ws.onopen = function () { setStatus('live', 'live'); sendSize(); term.focus(); render(); };
+    ws.onopen = function () { softStart = softStart || Date.now(); setStatus('live', 'live'); sendSize(); term.focus(); render(); };
     ws.onmessage = function (ev) { term.write(ev.data); };
     ws.onclose = function (ev) { setStatus('ended', 'ended'); term.write('\r\n[session ended: ' + (ev.reason || ev.code) + ']\r\n'); };
     ws.onerror = function () { setStatus('ended', 'error'); };
@@ -295,11 +295,32 @@
   };
   window.addEventListener('beforeunload', function () { try { if (ws) ws.close(1000, 'page closed'); } catch (e) { /* closed */ } });
 
+  // Soft timer: counts down the lab's suggested time plus a buffer, from the moment the terminal connects. It never ends the session;
+  // past zero it shows how long you are over.
+  var softStart = null, softTick = null;
+  function fmtClock(sec) { return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
+  function startSoftTimer() {
+    if (softTick) return;
+    softStart = softStart || Date.now();
+    var el = $('lab-timer'), txt = $('lab-timer-text');
+    var buffer = Math.max(5, Math.ceil(DATA.minutes * 0.5));
+    var total = (DATA.minutes + buffer) * 60;
+    el.title = 'Suggested time for this lab: ' + DATA.minutes + ' min plus a ' + buffer + ' min buffer. Nothing ends when it runs out.';
+    function tick() {
+      var left = total - Math.floor((Date.now() - softStart) / 1000);
+      el.style.display = '';
+      if (left >= 0) { txt.textContent = fmtClock(left); el.classList.toggle('is-low', left < 120); }
+      else { txt.textContent = '+' + fmtClock(-left) + ' over'; el.classList.add('is-low'); }
+    }
+    tick();
+    softTick = setInterval(tick, 1000);
+  }
+
   function pollTimer() {
     if (!token) return;
     fetch(API + '/session/remaining?token=' + token).then(function (r) { return r.json(); }).then(function (d) {
       var t = d.remainingSec, el = $('lab-timer');
-      if (t === null) { el.style.display = 'none'; return; }          // this server has no session time limit
+      if (t === null) { startSoftTimer(); return; }          // no session limit on this server: show the soft, suggested-time countdown instead
       $('lab-timer-text').textContent = t <= 0 ? '00:00' : String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       el.classList.toggle('is-low', t > 0 && t < 120);
     }).catch(function () { /* transient */ });

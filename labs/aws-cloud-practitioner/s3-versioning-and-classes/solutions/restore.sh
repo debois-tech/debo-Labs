@@ -1,0 +1,1 @@
+aws s3api delete-object --bucket debo-archive-123456789012 --key plan.txt --version-id $(aws s3api list-object-versions --bucket debo-archive-123456789012 --prefix plan.txt --query 'DeleteMarkers[0].VersionId' --output text)

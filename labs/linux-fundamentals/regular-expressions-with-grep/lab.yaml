@@ -1,0 +1,48 @@
+title: Regular expressions with grep
+level: intermediate
+minutes: 13
+summary: Extract emails, count matches, invert, match whole words and ignore case.
+resources:
+- title: GNU grep manual
+  url: https://www.gnu.org/software/grep/manual/grep.html
+  desc: Patterns, options and examples.
+steps:
+- id: regex-idea
+  type: lesson
+  title: Patterns, not exact text
+  body: |
+    `grep -E` uses **extended regular expressions**: `.` any char, `+` one or more, `[a-z0-9._]` a set, `^`/`$` line start/end, `|` alternation, `\.` a literal dot.
+
+    Flags: `-o` print only the match, `-c` count matching lines, `-v` invert, `-w` whole word, `-i` ignore case.
+
+    Files: `contacts.txt` and `server.log`.
+- id: emails
+  type: task
+  title: Extract the emails
+  body: |
+    Print **only the email addresses** from `contacts.txt`, one per line, into `emails.txt`.
+  hint: grep -Eo with a pattern like [A-Za-z0-9._]+@[A-Za-z0-9.]+\.[a-z]+
+- id: count
+  type: task
+  title: Count the problems
+  body: |
+    Count the lines of `server.log` that contain `ERROR` **or** `WARN`, and save just the number in `problems.txt`.
+  hint: grep -c counts lines; -E allows ERROR|WARN
+- id: invert
+  type: task
+  title: Drop the noise
+  body: |
+    Write the lines of `server.log` that do **not** contain `DEBUG` to `quiet.log`.
+  hint: grep -v
+- id: whole-word
+  type: task
+  title: Match a whole word
+  body: |
+    Write the lines that contain the **whole word `fail`** (not `failure` or `failed`) to `fail.log`.
+  hint: grep -w
+- id: ignore-case
+  type: task
+  title: Ignore case
+  body: |
+    Write every line containing `timeout` in **any capitalisation** to `timeouts.log`.
+  hint: grep -i

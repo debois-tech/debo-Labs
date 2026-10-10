@@ -9,6 +9,9 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 ## [Unreleased]
 
 ### Added
+- **AWS Cloud Practitioner track** (8 labs, 44 graded tasks) typed against the offline `aws` practice CLI: the CLI, Regions and zones; IAM users and groups; custom IAM policies and explicit Deny; S3 buckets and objects; S3 versioning, storage classes and lifecycle; EC2 launch, security groups and clean-up; CloudWatch alarms with SNS; billing, tags, budgets and support plans.
+- **13 more Linux labs** in Linux Fundamentals: processes and signals; sed and awk; find and xargs; tar and gzip; links and inodes; environment and PATH; setgid, sticky bit and umask; redirection and tee; scripts with arguments, loops and exit codes; JSON with jq; regular expressions with grep; dates and timestamps; disk usage.
+- **A soft lab timer.** On servers with no session time limit, the lab page counts down the lab's suggested time plus a buffer (50%, at least 5 minutes) from the moment the terminal connects. It never ends the session; past zero it shows how long you are over.
 - **Show answer after 3 failed checks.** Press Check and miss a task three times and a *Show answer* button appears with the commands that solve it. The server counts the misses per task and releases the answer only then (`POST /lab/answer`).
 - **A completion card you can share.** Finishing a lab shows a congratulations screen with the tasks you solved and a card (your name if you are logged in, the lab, the date). *Download image* saves a 1200x627 PNG, *Copy LinkedIn post* copies ready-made text with hashtags, and *Share on LinkedIn* opens the share page.
 - **An offline `aws` practice CLI** in the image (`tools/aws-sim`, see `docs/aws-simulator.md`) for the upcoming AWS Cloud Practitioner labs: IAM, S3, EC2, CloudWatch, SNS, Budgets and Cost Explorer against a simulated account kept in the learner's home. New dependency: `jmespath` (for `--query`).
