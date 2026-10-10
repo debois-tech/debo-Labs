@@ -247,3 +247,37 @@ t('show answer: locked until 3 failed checks of that task, then returns the solu
     assert.equal((await require('./helpers').post(app, '/lab/answer', { token: 'nope', stepId: 'mkdir' })).status, 403);
   } finally { lab.ws.close(); app.stop(); }
 });
+
+t('certificate: issued only after this session passed every task; one id per user and lab; the page shows and verifies it', async () => {
+  const os = require('node:os');
+  const { post, get } = require('./helpers');
+  const { loadCatalog } = require('../../src/loader');
+  const app = await start({ authEnabled: true, dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'cert-test-')), accessTokens: [] });
+  const up = await post(app, '/auth/signup', { email: 'lee@example.com', password: 'correct horse', name: 'Lee Learner' });
+  const cookie = String(up.headers['set-cookie']).split(';')[0];
+  const lab = await openLab(app, 'linux-fundamentals', 'navigating', { headers: { Cookie: cookie } });
+  const def = loadCatalog(path.join(__dirname, '..', '..', 'labs')).tracks.find((x) => x.id === 'linux-fundamentals').labs.find((x) => x.id === 'navigating');
+  try {
+    assert.equal((await post(app, '/certificate', { token: lab.token })).status, 401, 'no login, no certificate');
+    const early = await post(app, '/certificate', { token: lab.token }, { headers: { Cookie: cookie } });
+    assert.equal(early.status, 403, 'tasks not passed yet');
+    for (const step of def.steps.filter((x) => x.type === 'task')) {
+      for (const line of fs.readFileSync(step.solutionFile, 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))) await lab.run(line);
+      assert.equal(await pass(app, lab.token, step.id), true, step.id);
+    }
+    const got = await post(app, '/certificate', { token: lab.token }, { headers: { Cookie: cookie } });
+    assert.equal(got.status, 200);
+    assert.match(got.json.id, /^DL(-[0-9A-F]{4}){4}$/);
+    const again = await post(app, '/certificate', { token: lab.token }, { headers: { Cookie: cookie } });
+    assert.equal(again.json.id, got.json.id, 'the same credential is returned for the same user and lab');
+    const pageRes = await get(app, got.json.url);
+    assert.equal(pageRes.status, 200);
+    assert.match(pageRes.body, /Lee Learner/);
+    assert.match(pageRes.body, new RegExp(def.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.match(pageRes.body, new RegExp(got.json.id));
+    assert.equal((await get(app, '/certificate/DL-0000-0000-0000-0000')).status, 404, 'unknown ids are not found');
+    assert.equal((await get(app, '/certificate/not-an-id')).status, 404);
+    const prog = await get(app, '/progress', { headers: { Cookie: cookie } });
+    assert.ok(prog.json.done.includes('linux-fundamentals/navigating'), 'the server records the completion itself');
+  } finally { lab.ws.close(); app.stop(); }
+});

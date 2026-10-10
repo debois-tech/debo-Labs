@@ -18,6 +18,15 @@ function createAuth({ dir, secret, secure }) {
   const usersFile = path.join(dir, 'users.json');
   const key = Buffer.from(secret || loadOrCreateSecret(path.join(dir, '.secret')));
 
+  const certsFile = path.join(dir, 'certs.json');
+  let certs = {};                                  // credential id -> { id, userId, name, track, lab, labTitle, issued }
+  try { certs = JSON.parse(fs.readFileSync(certsFile, 'utf8')); } catch { /* none yet */ }
+  const saveCerts = () => {
+    const tmp = certsFile + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(certs), { mode: 0o600 });
+    fs.renameSync(tmp, certsFile);
+  };
+
   let users = {};                                  // id -> { id, email, name, salt, hash, createdAt, done: [] }
   try { users = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch { /* first run */ }
   const byEmail = (email) => Object.values(users).find((u) => u.email === email);
@@ -97,7 +106,19 @@ function createAuth({ dir, secret, secure }) {
     return progressOf(u);
   }
 
-  return { userFrom, signup, login, clearCookie, view, progressOf, markDone };
+  // A credential is issued once per user and lab; asking again returns the same one. The id is random, never guessable from the others.
+  function issueCertificate(u, { track, lab, labTitle }) {
+    const existing = Object.values(certs).find((c) => c.userId === u.id && c.track === track && c.lab === lab);
+    if (existing) return existing;
+    let id;
+    do { id = 'DL-' + crypto.randomBytes(8).toString('hex').toUpperCase().match(/.{4}/g).join('-'); } while (certs[id]);
+    certs[id] = { id, userId: u.id, name: u.name || u.email.split('@')[0], track, lab, labTitle, issued: new Date().toISOString() };
+    saveCerts();
+    return certs[id];
+  }
+  const getCertificate = (id) => certs[id] || null;
+
+  return { userFrom, signup, login, clearCookie, view, progressOf, markDone, issueCertificate, getCertificate };
 }
 
 function loadOrCreateSecret(file) {

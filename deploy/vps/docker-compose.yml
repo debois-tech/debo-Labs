@@ -19,7 +19,7 @@ services:
       MAX_SESSIONS_PER_IP: ${MAX_SESSIONS_PER_IP:-50}  # a campus or class often sits behind one address
     expose: ["8080"]
     cpus: ${LAB_CPUS:-2.0}
-    mem_limit: ${LAB_MEMORY:-6g}
+    mem_limit: ${LAB_MEMORY:-5g}                  # leave the VM itself (and Caddy) room: size the VM at least 2 GB above this
     pids_limit: 4096
     cap_drop: [ALL]
     cap_add: [SETUID, SETGID, KILL, CHOWN, DAC_OVERRIDE]

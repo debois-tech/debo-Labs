@@ -62,3 +62,27 @@ The header chip then reads **online**, and a lab asks for an invite code, then c
 2. Run the lab's first task and press **Check**.
 
 If the terminal says it cannot reach the server, the page origin is missing from `LAB_ALLOWED_ORIGINS` (it must match exactly, including `https://`) or the domain does not resolve yet.
+
+## Sizing and keeping the VM healthy
+
+- **50 learners need real CPU.** A burstable VM size (for example Azure `B`-series, AWS `t`-series) runs fast on a CPU credit balance and then
+  throttles to a fraction of a core; under a full class that can freeze the machine (HTTPS and SSH both time out). For classes use a non-burstable size
+  (2 vCPU / 8 GB at the very least; 4 vCPU / 16 GB is comfortable) and watch the CPU-credit metric if you stay burstable.
+- **Leave headroom.** `LAB_MEMORY` (default 5 GB) must sit well below the VM's RAM, so the host and Caddy never starve.
+- **Add swap** so a short memory spike slows things down instead of freezing the VM:
+  `sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile && echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab`
+- **After a crash or reboot**, look at why: `docker compose logs --tail 100 labs`, `docker inspect -f '{{.RestartCount}} oom={{.State.OOMKilled}}' vps-labs-1`, `dmesg | grep -i -E 'oom|killed'`, `uptime`.
+
+## If the repository is private
+
+The server pulls the code from GitHub, which needs a login once the repo is private. Give the VM a **read-only deploy key**, then switch it to SSH:
+
+```bash
+ssh-keygen -t ed25519 -N '' -f ~/.ssh/deploy_key -C debo-labs-vm && cat ~/.ssh/deploy_key.pub
+# GitHub: repo Settings -> Deploy keys -> Add deploy key (paste it, leave "Allow write access" OFF)
+git -C ~/debo-Labs remote set-url origin git@github.com:debois-tech/debo-Labs.git
+git -C ~/debo-Labs config core.sshCommand "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes"
+git -C ~/debo-Labs pull
+```
+
+`setup.sh` fetches the repo anonymously, so for a private repo clone it yourself first (with the deploy key) and run `deploy/vps/setup.sh` from the clone.

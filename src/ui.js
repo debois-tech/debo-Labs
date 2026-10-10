@@ -39,6 +39,11 @@ function createUi(o) {
     '/home.css': () => [fs.readFileSync(path.join(PUBLIC, 'home.css')), 'text/css'],
     '/home.js': () => [fs.readFileSync(path.join(PUBLIC, 'home.js')), 'application/javascript'],
     '/logo/debo-labs-logo.png': () => [fs.readFileSync(path.join(PUBLIC, 'logo', 'debo-labs-logo.png')), 'image/png'],
+    '/logo/debo-labs-mark.png': () => [fs.readFileSync(path.join(PUBLIC, 'logo', 'debo-labs-mark.png')), 'image/png'],
+    '/logo/deboistech-logo.png': () => [fs.readFileSync(path.join(PUBLIC, 'logo', 'deboistech-logo.png')), 'image/png'],
+    '/logo/debo-labs-mark-white.png': () => [fs.readFileSync(path.join(PUBLIC, 'logo', 'debo-labs-mark-white.png')), 'image/png'],
+    '/certificate.css': () => [fs.readFileSync(path.join(PUBLIC, 'certificate.css')), 'text/css'],
+    '/certificate.js': () => [fs.readFileSync(path.join(PUBLIC, 'certificate.js')), 'application/javascript'],
   };
   if (o.xtermDir) {
     const files = {

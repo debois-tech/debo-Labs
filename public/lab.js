@@ -194,7 +194,7 @@
       '<p class="done-sub">' + tasks.length + (tasks.length === 1 ? ' task' : ' tasks') + ' solved, each one checked against the real state of your terminal:</p>' +
       '<ul class="done-list">' + tasks.map(function (t) { return '<li>' + esc(t.title) + '</li>'; }).join('') + '</ul>' +
       '<p class="done-sub">' + (DATA.next ? 'Ready for the next one?' : 'That was the last lab in this track — nicely done.') + '</p>';
-    html += shareHtml(tasks.length);
+    html += '<div id="cert-slot"></div>' + shareHtml(tasks.length);
     if (DATA.resources.length) {
       html += '<ul class="resource-list">' + DATA.resources.map(function (r) {
         return '<li><a href="' + r.url + '" target="_blank" rel="noopener noreferrer">' + esc(r.title) + '</a><span>' + esc(r.desc) + '</span></li>';
@@ -215,6 +215,24 @@
     $('skip-btn').style.visibility = 'hidden';
     $('back-btn').style.visibility = 'hidden';
     wireShare(tasks.length);
+    requestCertificate();
+  }
+
+  // A signed-in learner earns a verifiable certificate: the server checks that this very session passed every task, then issues the credential.
+  function requestCertificate() {
+    var slot = $('cert-slot');
+    if (!slot || !window.deboUser || !token) return;
+    slot.innerHTML = '<p class="done-sub">Issuing your certificate…</p>';
+    fetch(API + '/certificate', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
+      .then(function (r) { return r.json().then(function (b) { return { status: r.status, body: b }; }); })
+      .then(function (r) {
+        if (r.status === 200) {
+          slot.innerHTML = '<div class="cert-earned"><span class="answer-label">Your certificate</span><div class="cert-earned-id">' + esc(r.body.id) + '</div>' +
+            '<a class="btn primary" href="' + esc(r.body.url) + '">View &amp; download certificate</a></div>';
+          var generic = document.querySelector('.share'); if (generic) generic.style.display = 'none';
+        } else slot.innerHTML = '<p class="done-sub">' + esc(r.body.message || 'A certificate could not be issued for this session. It needs the terminal session that completed the tasks.') + '</p>';
+      })
+      .catch(function () { slot.innerHTML = '<p class="done-sub">Could not reach the server to issue the certificate.</p>'; });
   }
 
   // --- share: a card to screenshot or download, and post text for LinkedIn -------------------------------------------
@@ -227,7 +245,7 @@
       'Learning by doing beats watching tutorials. Try it: ' + shareUrl() + '\n\n' + (TAGS[DATA.track] || '#DevOps #Cloud #Linux') + ' #HandsOnLearning #DeboLabs';
   }
   function shareHtml(n) {
-    return '<div class="share"><div class="share-card" id="share-card"><div class="sc-top"><img src="/logo/debo-labs-logo.png" alt="" width="36" height="36" /><span>Debo <b>Labs</b></span></div>' +
+    return '<div class="share"><div class="share-card" id="share-card"><div class="sc-top"><img src="/logo/debo-labs-mark.png" alt="" /><span>Debo <b>Labs</b></span></div>' +
       '<div class="sc-kicker">Lab completed</div><div class="sc-title">' + esc(DATA.title) + '</div>' +
       '<div class="sc-meta">' + n + (n === 1 ? ' task' : ' tasks') + ' solved &middot; graded on real terminal state</div>' +
       '<div class="sc-foot"><span class="sc-name" id="sc-name"></span><span>' + esc(today()) + '</span></div></div>' +
@@ -264,8 +282,9 @@
     }
     var sans = 'Inter, "Helvetica Neue", Arial, sans-serif', disp = 'Sora, Inter, "Helvetica Neue", Arial, sans-serif';
     var finish = function (logo) {
-      if (logo) g.drawImage(logo, 80, 76, 56, 56);
-      text('Debo Labs', logo ? 152 : 80, 116, '600 34px ' + disp, '#e9f5ef');
+      var lw = logo ? Math.round(56 * logo.width / logo.height) : 0;
+      if (logo) g.drawImage(logo, 80, 76, lw, 56);
+      text('Debo Labs', logo ? 80 + lw + 16 : 80, 116, '600 34px ' + disp, '#e9f5ef');
       text('LAB COMPLETED', 80, 250, '600 24px ' + sans, '#34d399');
       var last = wrap(DATA.title, 80, 322, '700 58px ' + disp, '#ffffff', W - 160, 70);
       text(n + (n === 1 ? ' task' : ' tasks') + ' solved  \u00b7  graded on real terminal state', 80, last + 64, '400 28px ' + sans, '#8fa89c');
@@ -282,7 +301,7 @@
     var img = new Image();
     img.onload = function () { finish(img); };
     img.onerror = function () { finish(null); };
-    img.src = '/logo/debo-labs-logo.png';
+    img.src = '/logo/debo-labs-mark.png';
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
