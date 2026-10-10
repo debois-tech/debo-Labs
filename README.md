@@ -61,7 +61,7 @@ cd debo-Labs
 ./start_local_labs.sh
 ```
 
-The first run builds the image (a few minutes); after that it starts in seconds. Your browser opens at **http://localhost:8080**. Press `Ctrl+C` to stop; everything you did in a lab is thrown away with its sandbox.
+The first run builds the image (a few minutes); after that it starts in seconds. Your browser opens at **http://localhost:8082**. Press `Ctrl+C` to stop; everything you did in a lab is thrown away with its sandbox.
 
 | Your machine | How to run it |
 |---|---|
@@ -72,7 +72,7 @@ The first run builds the image (a few minutes); after that it starts in seconds.
 Options:
 
 ```bash
-LABS_PORT=9090 ./start_local_labs.sh     # use another port (8080 is the default); then open http://localhost:9090
+LABS_PORT=9090 ./start_local_labs.sh     # use another port (8082 is the default); then open http://localhost:9090
 NO_BROWSER=1 ./start_local_labs.sh       # don't open the browser
 ./start_local_labs.sh stop               # stop and clean up from another terminal
 ```

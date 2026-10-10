@@ -1,6 +1,6 @@
 # Run Debo Labs on your own machine (Windows, macOS or Linux) - no account needed.
 #
-#   docker compose up --build        then open http://localhost:8080
+#   docker compose up --build        then open http://localhost:8082
 #
 # The labs hand you a real Linux shell, so they live in a container. That is also
 # what makes them work the same on Windows: the shell is Linux inside the container.
@@ -10,7 +10,7 @@ services:
     image: debo-labs:dev
     ports:
       # Localhost only. This is a real shell - never expose it to your network.
-      - "127.0.0.1:${LABS_PORT:-8080}:8080"
+      - "127.0.0.1:${LABS_PORT:-8082}:8080"
     environment:
       LAB_PROFILE: local       # loopback-only guard, relaxed limits, offline fonts
       LABS_WATCH: "1"          # re-read labs/ on every page load: edit YAML, refresh, see it

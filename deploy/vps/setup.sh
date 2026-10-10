@@ -37,11 +37,9 @@ if [ -f .env ]; then
   echo ".env already exists, keeping it."
 else
   read -rp "Domain that points at this VM (e.g. labs-api.example.com): " DOMAIN
-  read -rp "Page origin that may call this server (e.g. https://debo-labs.vercel.app): " ORIGIN
-  read -rp "Invite code(s) learners will type, comma-separated: " TOKENS
-  [ -n "$DOMAIN" ] && [ -n "$ORIGIN" ] && [ -n "$TOKENS" ] || fail "All three are required."
-  ORIGIN="${ORIGIN%/}"
-  { echo "LABS_DOMAIN=$DOMAIN"; echo "LAB_ALLOWED_ORIGINS=$ORIGIN"; echo "LAB_ACCESS_TOKENS=$TOKENS"; } > .env
+  [ -n "$DOMAIN" ] || fail "A domain is required."
+  # People sign up on this site itself (LAB_AUTH=on); invite codes and a separate page host are optional extras.
+  { echo "LABS_DOMAIN=$DOMAIN"; echo "AUTH_SECRET=$(openssl rand -hex 32)"; } > .env
   chmod 600 .env
 fi
 
@@ -50,7 +48,7 @@ $SUDO docker compose up -d --build
 sleep 8
 DOMAIN_NOW="$(grep '^LABS_DOMAIN=' .env | cut -d= -f2)"
 if curl -fsS "https://$DOMAIN_NOW/healthz" >/dev/null 2>&1; then
-  say "Done. https://$DOMAIN_NOW/healthz answers. Now set LAB_BACKEND_URL=https://$DOMAIN_NOW in your Vercel project and redeploy."
+  say "Done. https://$DOMAIN_NOW/healthz answers. Open it, create an account, and start a lab."
 else
   echo "The server is up, but https://$DOMAIN_NOW is not answering yet. Usual causes: the DNS record has not propagated,"
   echo "or ports 80/443 are not open in the cloud provider's network settings. Logs: docker compose logs caddy"

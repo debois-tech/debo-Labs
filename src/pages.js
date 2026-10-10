@@ -5,6 +5,19 @@ const { ASCII_BANNER } = require('./banner');
 const mins = (ms) => Math.round(ms / 60000);
 const REPO_URL = 'https://github.com/debois-tech/debo-Labs';
 
+function loginBody() {
+  return `<main class="wrap auth-wrap"><span class="eyebrow">Your account</span><h1 class="page-title">Log in or create an account.</h1>
+    <p class="lede">An account saves your progress across devices and lets you start labs on this server.</p>
+    <div class="auth-tabs" role="tablist"><button type="button" role="tab" id="tab-login" aria-selected="true">Log in</button><button type="button" role="tab" id="tab-signup" aria-selected="false">Create account</button></div>
+    <form id="auth-form" class="auth-form" novalidate>
+      <label id="name-row" hidden>Name <span class="faint">(optional)</span><input name="name" autocomplete="name" maxlength="60" /></label>
+      <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" minlength="8" required /></label>
+      <p class="auth-error" id="auth-error" role="alert"></p>
+      <button class="btn-primary" type="submit"><span id="auth-submit">Log in</span> <span aria-hidden="true">&rarr;</span></button>
+    </form></main>`;
+}
+
 function notFoundBody() {
   return `<div class="wrap"><span class="eyebrow">404</span><h1 class="page-title">Page not found.</h1>
     <p class="lede">That page doesn&rsquo;t exist, or the lab has moved.</p><p style="margin-top:28px"><a class="btn-primary" href="/">Back to the labs <span aria-hidden="true">&rarr;</span></a></p></div>`;
@@ -88,7 +101,7 @@ function homeBody(catalog, cfg) {
     <div class="run-grid">
       <div class="reveal"><span class="eyebrow">Run it locally</span><h2 id="runh">On your own machine.</h2><p class="lede">Docker is all you need.</p></div>
       <div class="runbox reveal"><div class="tabs-os" role="tablist" aria-label="Operating system">${tabs}</div>${panels}
-        <p class="run-after">Then open <a href="http://localhost:8080">localhost:8080</a>.</p></div>
+        <p class="run-after">Then open <a href="http://localhost:8082">localhost:8082</a>.</p></div>
     </div>
   </section>
 
@@ -136,7 +149,7 @@ const STAT = (id, label) => `<div class="stat-cell"><div class="stat-label">${la
 function labBody(lab, trackTitle, cfg, next) {
   const data = {
     track: lab.track, lab: lab.id, title: lab.title, trackUrl: '/t/' + lab.track,
-    local: cfg.isLocal, gated: !cfg.isLocal && (cfg.terminal || !!cfg.backendUrl || cfg.sandbox), backend: cfg.backendUrl, sandbox: !!cfg.sandbox, banner: ASCII_BANNER,
+    local: cfg.isLocal, gated: !cfg.isLocal && !(cfg.authEnabled && !cfg.accessTokens.length) && (cfg.terminal || !!cfg.backendUrl || cfg.sandbox), backend: cfg.backendUrl, sandbox: !!cfg.sandbox, banner: ASCII_BANNER,
     links: lab.links, resources: lab.resources, next,
     steps: lab.steps.map((s) => ({
       id: s.id, type: s.type, title: s.title, hint: s.hint, success: s.success,
@@ -185,4 +198,5 @@ function labBody(lab, trackTitle, cfg, next) {
   };
 }
 
-module.exports = { notFoundBody, homeBody, trackBody, labBody, nextLab };
+module.exports = {
+  loginBody, notFoundBody, homeBody, trackBody, labBody, nextLab };

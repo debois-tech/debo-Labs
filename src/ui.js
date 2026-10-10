@@ -35,6 +35,7 @@ function createUi(o) {
     '/app.css': () => [Buffer.from(appCss), 'text/css'],
     '/lab.js': () => [fs.readFileSync(path.join(PUBLIC, 'lab.js')), 'application/javascript'],
     '/progress.js': () => [fs.readFileSync(path.join(PUBLIC, 'progress.js')), 'application/javascript'],
+    '/auth.js': () => [fs.readFileSync(path.join(PUBLIC, 'auth.js')), 'application/javascript'],
     '/home.css': () => [fs.readFileSync(path.join(PUBLIC, 'home.css')), 'text/css'],
     '/home.js': () => [fs.readFileSync(path.join(PUBLIC, 'home.js')), 'application/javascript'],
     '/logo/debo-labs-logo.png': () => [fs.readFileSync(path.join(PUBLIC, 'logo', 'debo-labs-logo.png')), 'image/png'],
@@ -67,7 +68,7 @@ function createUi(o) {
   <a class="logo" href="/"><img class="logo-mark" src="/logo/debo-labs-logo.png" alt="Debo Labs" />
     <span class="logo-word">Debo <span class="accent">Labs</span></span></a>
   <div class="topbar-right"><span class="mono chip-env"${o.chipTitle ? ` title="${esc(o.chipTitle)}"` : ''}>${esc(o.chip)}</span>
-    <a class="btn-site" href="${SITE_URL}" target="_blank" rel="noopener noreferrer">deboistech.in <span aria-hidden="true">&#8599;</span></a></div>
+    ${o.auth ? '<span id="auth-slot" class="auth-slot"></span>' : ''}<a class="btn-site" href="${SITE_URL}" target="_blank" rel="noopener noreferrer">deboistech.in <span aria-hidden="true">&#8599;</span></a></div>
 </header>`;
   }
 
@@ -81,7 +82,7 @@ function createUi(o) {
 ${SPRITE}
 ${topbar()}
 ${body}
-${scripts}
+${scripts}${o.auth ? '<script src="/auth.js"></script>' : ''}
 </body></html>`;
   }
 

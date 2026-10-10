@@ -1,3 +1,7 @@
+> **Simplest setup (recommended): run the whole site here.** This server serves the pages, the accounts (sign up / log in, saved progress) and the terminals from one domain,
+> so nothing else is needed and Vercel is not involved. Run `setup.sh` (or the manual steps below), open `https://<your domain>`, and create an account.
+> Accounts live in the `labs_data` Docker volume: back it up, and run a single lab server per volume. The split-hosting sections below are only for keeping the pages on another host.
+
 # Lab server on your own machine (split hosting)
 
 Real terminals need a real Linux process per learner, which serverless hosts cannot run. In this setup the **pages** live on a serverless host

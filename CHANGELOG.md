@@ -9,6 +9,7 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 ## [Unreleased]
 
 ### Added
+- **Accounts and saved progress** (`LAB_AUTH=on`). People create an account or log in at `/login`; finished labs are saved to the account and follow them across devices (a browser's existing progress is merged in on login). Starting a lab then needs a login, and invite codes become optional. Passwords are scrypt-hashed, logins are signed HttpOnly cookies, and accounts live in a JSON file under `DATA_DIR` (`/data` in the image). Off by default, so the local app stays account-free.
 - **Preview mode for serverless hosts** (`api/index.js`, `vercel.json`, or `LAB_TERMINAL=off`). The pages render, but no shells start: a lab shows that live terminals need Docker.
   `node-pty` is now an optional dependency, loaded only when a terminal starts.
 
@@ -37,6 +38,13 @@ To see what you are running, check `version` in `package.json`. Self-hosters: `g
 - **Hosted:** `/roadmap`, `/videos` and `/upcoming` now return 404; update any bookmark or monitor that points at them (`deploy/smoke-test.py` is already updated). The GitHub repo must move to its new
   owner and name before the next deploy; see AGENTS.md on the OIDC trust policy.
 - The runtime image changed, so the next push to `main` redeploys it through `deploy.yml`. No Terraform or settings changes.
+
+### Changed
+- The local app's default port is now **8082** instead of 8080 (`LABS_PORT` still overrides it). The server inside the container still listens on 8080.
+
+### Upgrade notes
+- Self-hosters on `deploy/vps`: the compose file now turns accounts on and mounts a `labs_data` volume at `/data`; `LAB_ALLOWED_ORIGINS` and `LAB_ACCESS_TOKENS` are optional. Run one lab server per data volume and back the volume up.
+- The image now declares `DATA_DIR=/data` as a volume. Mount a persistent volume there when `LAB_AUTH=on`; the Elastic Beanstalk deployment does not set `LAB_AUTH`, so it is unchanged.
 
 ## [1.1.0] - 2026-10-06
 

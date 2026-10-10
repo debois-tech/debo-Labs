@@ -37,6 +37,10 @@ function loadConfig(env = process.env) {
     backendUrl,
     allowedOrigins: isLocal ? [] : String(env.LAB_ALLOWED_ORIGINS || '').split(',').map(originOf).filter(Boolean),
     port: env.PORT || 8080,
+    // Accounts + saved progress (opt-in). Off by default so the local app stays account-free; the public server sets LAB_AUTH=on.
+    authEnabled: env.LAB_AUTH === 'on',
+    dataDir: env.DATA_DIR || require('path').join(require('os').tmpdir(), 'debo-labs-data'),
+    authSecret: env.AUTH_SECRET || '',
     labsDir: env.LABS_DIR || require('path').join(__dirname, '..', 'labs'),
     sandboxDir: env.SANDBOX_DIR || require('path').join(require('os').tmpdir(), 'debo-labs-sandbox'),
     watch: env.LABS_WATCH === '1',

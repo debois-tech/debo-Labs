@@ -5,6 +5,7 @@
   window.deboMarkDone = function (id) {
     try { var d = read(); if (d.indexOf(id) < 0) d.push(id); localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* storage blocked */ }
   };
+  function render() {
   var done = read();
   document.querySelectorAll('[data-lab]').forEach(function (el) {
     if (done.indexOf(el.getAttribute('data-lab')) >= 0) el.classList.add('is-done');
@@ -22,4 +23,10 @@
     var card = el.closest('[data-track]');
     if (card) card.style.setProperty('--p', labs.length ? (n / labs.length) : 0);
   });
+  }
+  render();
+  // auth.js merges the saved progress of a logged-in account into this browser's list, then asks for a repaint
+  window.deboRenderProgress = render;
+  window.deboLocalDone = read;
+  window.deboWriteDone = function (d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* storage blocked */ } };
 })();

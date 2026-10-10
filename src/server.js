@@ -12,6 +12,7 @@ const { loadCatalog } = require('./loader');
 const { createUi } = require('./ui');
 const { createSandbox } = require('./sandbox');
 const { createStats } = require('./stats');
+const { createAuth } = require('./auth');
 const pages = require('./pages');
 
 const XTERM_DIR = path.join(__dirname, '..', 'node_modules', '@xterm');
@@ -23,7 +24,7 @@ const MAX_JSON_BODY_BYTES = 4 * 1024;
 // This app hands out a real shell, so a web page the visitor happens to have open
 // must not be able to drive it.
 //  local  : Host and Origin must be loopback names (stops DNS rebinding and CSRF
-//           against localhost:8080).
+//           against localhost:8082).
 //  hosted : Origin must equal Host (same-origin); Host is whatever the ALB serves.
 // State-changing requests (POST, WebSocket) must carry an Origin; browsers always send one.
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -86,9 +87,10 @@ function createApp(opts = {}) {
   const { profile, ...rest } = opts;
   const cfg = { ...loadConfig(env), ...rest };
 
-  const ui = createUi({ chip: cfg.chip, chipTitle: `pod ${os.hostname()}`, remoteFonts: cfg.remoteFonts, xtermDir: XTERM_DIR });
+  const ui = createUi({ chip: cfg.chip, chipTitle: `pod ${os.hostname()}`, remoteFonts: cfg.remoteFonts, auth: cfg.authEnabled, xtermDir: XTERM_DIR });
   const sandbox = createSandbox({ labsDir: cfg.labsDir });
   const stats = createStats();
+  const auth = cfg.authEnabled ? createAuth({ dir: cfg.dataDir, secret: cfg.authSecret, secure: !cfg.isLocal }) : null;
   const pool = createUidPool(cfg.uidBase, cfg.maxSessions);
 
   fs.mkdirSync(cfg.sandboxDir, { recursive: true });
@@ -135,6 +137,28 @@ function createApp(opts = {}) {
     }
     if (ui.serveAsset(req, res, p)) return;
 
+    // Accounts and saved progress (LAB_AUTH=on). Same-origin only: state-changing calls must carry a matching Origin.
+    if (auth && (p === '/auth/me' || p === '/progress' || p.startsWith('/auth/'))) {
+      const user = auth.userFrom(req);
+      const ip = clientIp(req, { trustProxy: cfg.trustProxy });
+      const reply = (r) => json(res, r.status, r.error ? { error: r.error } : { user: r.user }, r.cookie ? { 'Set-Cookie': r.cookie, 'Cache-Control': 'no-store' } : { 'Cache-Control': 'no-store' });
+      if (req.method === 'GET' && p === '/auth/me') return json(res, 200, { enabled: true, user: user ? auth.view(user) : null }, { 'Cache-Control': 'no-store' });
+      if (req.method === 'GET' && p === '/progress') return user ? json(res, 200, { done: auth.progressOf(user) }, { 'Cache-Control': 'no-store' }) : json(res, 401, { error: 'login-required' });
+      if (req.method === 'POST' && ['/auth/signup', '/auth/login', '/auth/logout', '/progress'].includes(p)) {
+        if (!guardOk(req, cfg, { needOrigin: true })) return json(res, 403, { error: 'forbidden' });
+        if (p === '/auth/logout') return json(res, 200, { ok: true }, { 'Set-Cookie': auth.clearCookie() });
+        return readJson(req, res, async (body) => {
+          if (p === '/auth/signup') return reply(await auth.signup(body, ip));
+          if (p === '/auth/login') return reply(await auth.login(body, ip));
+          if (!user) return json(res, 401, { error: 'login-required' });
+          const labs = [].concat(body.labs || body.lab || []).filter((id) => typeof id === 'string' && /^[a-z0-9-]+\/[a-z0-9-]+$/.test(id) && findLab(...id.split('/')));
+          json(res, 200, { done: auth.markDone(user, labs) });
+        });
+      }
+    }
+    if (!auth && req.method === 'GET' && p === '/auth/me') return json(res, 200, { enabled: false, user: null });
+    if (auth && req.method === 'GET' && p === '/login') return send(res, 200, 'text/html', page('Log in', pages.loginBody()));
+
     if (req.method === 'GET' && p === '/') {
       const home = pages.homeBody(getCatalog(), cfg);
       return send(res, 200, 'text/html', ui.page('Home', home.body, home.scripts, home.head));
@@ -159,7 +183,8 @@ function createApp(opts = {}) {
       return readJson(req, res, ({ track, lab }) => {
         const found = findLab(String(track), String(lab));
         if (!found) return json(res, 404, { error: 'unknown lab' });
-        if (!cfg.isLocal && !tokenOk(req, cfg)) {
+        if (auth && !auth.userFrom(req)) return json(res, 401, { error: 'login-required', message: 'Log in to start a lab.' });
+        if (!cfg.isLocal && !(auth && !cfg.accessTokens.length) && !tokenOk(req, cfg)) {   // accounts replace invite codes unless codes are configured too
           return json(res, 401, { error: 'token-required', message: 'This lab needs an invite code.' });
         }
         const ip = clientIp(req, { trustProxy: cfg.trustProxy });
