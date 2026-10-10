@@ -55,6 +55,7 @@
     document.getElementById('tab-login').setAttribute('aria-selected', String(m === 'login'));
     document.getElementById('tab-signup').setAttribute('aria-selected', String(m === 'signup'));
     document.getElementById('name-row').hidden = m !== 'signup';
+    form.name.required = m === 'signup';
     document.getElementById('auth-submit').textContent = m === 'login' ? 'Log in' : 'Create account';
     form.password.setAttribute('autocomplete', m === 'login' ? 'current-password' : 'new-password');
     err.textContent = '';
@@ -65,6 +66,7 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     err.textContent = '';
+    if (mode === 'signup' && !form.name.value.trim()) { err.textContent = 'Enter your name.'; form.name.focus(); return; }
     api('/auth/' + mode, { name: form.name.value, email: form.email.value, password: form.password.value }).then(function (r) {
       if (r.status === 200) { location.href = safeNext; return; }
       err.textContent = r.body.error || 'Something went wrong. Try again.';

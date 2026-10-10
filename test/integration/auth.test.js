@@ -23,6 +23,7 @@ test('sign up, log in, wrong password, logout; the cookie is HttpOnly and the em
   try {
     assert.equal((await post(app, '/auth/signup', { ...acct, password: 'short' })).status, 400);
     assert.equal((await post(app, '/auth/signup', { ...acct, email: 'nope' })).status, 400);
+    assert.equal((await post(app, '/auth/signup', { ...acct, name: '  ' })).status, 400, 'a name is required');
     const up = await post(app, '/auth/signup', acct);
     assert.equal(up.status, 200);
     assert.match(String(up.headers['set-cookie']), /HttpOnly/);
