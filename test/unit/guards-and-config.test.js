@@ -78,3 +78,10 @@ test('sandbox hosting: LAB_SANDBOX=1 on a host without terminals makes the lab p
   assert.equal(loadConfig({ VERCEL: '1' }).sandbox, false);
   assert.equal(loadConfig({ LAB_SANDBOX: '1' }).sandbox, false, 'a host that runs shells itself never uses a sandbox');
 });
+
+test('LAB_HARD_CAP_MIN=0 removes the session time limit; LAB_IDLE_MIN still applies', () => {
+  const c = loadConfig({ LAB_HARD_CAP_MIN: '0', LAB_IDLE_MIN: '30' });
+  assert.equal(c.hardCapMs, 0);
+  assert.equal(c.idleMs, 30 * 60 * 1000);
+  assert.equal(loadConfig({}).hardCapMs, 15 * 60 * 1000);
+});

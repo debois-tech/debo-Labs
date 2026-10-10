@@ -226,3 +226,24 @@ iso('isolation: learners cannot read the lab answers (solutions/) but the checks
     assert.equal(await pass(app, lab.token, 'mkdir'), true);
   } finally { lab.ws.close(); app.stop(); }
 });
+
+t('show answer: locked until 3 failed checks of that task, then returns the solution commands; other tasks stay locked', async () => {
+  const app = await start();
+  const lab = await openLab(app, 'linux-fundamentals', 'files');
+  const answer = (step) => require('./helpers').post(app, '/lab/answer', { token: lab.token, stepId: step });
+  try {
+    assert.equal((await answer('mkdir')).status, 403, 'locked before any attempt');
+    for (let i = 1; i <= 3; i++) {
+      const r = (await check(app, lab.token, 'mkdir')).json;
+      assert.equal(r.pass, false);
+      assert.equal(r.fails, i);
+      if (i < 3) assert.equal((await answer('mkdir')).status, 403, `still locked after ${i} failure(s)`);
+    }
+    const open = await answer('mkdir');
+    assert.equal(open.status, 200);
+    assert.ok(open.json.answer.length >= 1 && open.json.answer.every((l) => typeof l === 'string' && l.length));
+    assert.equal((await answer('write')).status, 403, 'another task has its own count');
+    assert.equal((await answer('no-such-step')).status, 404);
+    assert.equal((await require('./helpers').post(app, '/lab/answer', { token: 'nope', stepId: 'mkdir' })).status, 403);
+  } finally { lab.ws.close(); app.stop(); }
+});

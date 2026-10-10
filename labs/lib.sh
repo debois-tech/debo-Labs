@@ -44,3 +44,10 @@ yaml_get() {
     const r = new Function("d", "return (" + process.argv[3] + ")")(d); console.log(r !== null && typeof r === "object" ? JSON.stringify(r) : r);' \
     "${LAB_LIB%/labs/lib.sh}" "$1" "$2" 2>/dev/null
 }
+
+# sim EXPR : evaluate a JavaScript expression over the offline `aws` simulator's state `s` (the learner's simulated cloud) and print it.
+# Objects print as JSON; prints nothing if the simulator has not been used yet. Example:  [ "$(sim 'Object.keys(s.s3.buckets).length')" = 1 ]
+sim() {
+  node -e 'let s; try { s = JSON.parse(require("fs").readFileSync(process.env.HOME + "/.aws-sim/state.json", "utf8")); } catch (e) { process.exit(0); }
+    const r = new Function("s", "return (" + process.argv[1] + ")")(s); console.log(r !== null && typeof r === "object" ? JSON.stringify(r) : r);' "$1" 2>/dev/null
+}

@@ -152,7 +152,7 @@ function labBody(lab, trackTitle, cfg, next) {
     local: cfg.isLocal, gated: !cfg.isLocal && !(cfg.authEnabled && !cfg.accessTokens.length) && (cfg.terminal || !!cfg.backendUrl || cfg.sandbox), backend: cfg.backendUrl, sandbox: !!cfg.sandbox, banner: ASCII_BANNER,
     links: lab.links, resources: lab.resources, next,
     steps: lab.steps.map((s) => ({
-      id: s.id, type: s.type, title: s.title, hint: s.hint, success: s.success,
+      id: s.id, type: s.type, title: s.title, hint: s.hint, success: s.success, task: s.type === 'task',
       bodyHtml: (cfg.isLocal && s.localBodyHtml) || s.bodyHtml,
     })),
   };
@@ -171,9 +171,11 @@ function labBody(lab, trackTitle, cfg, next) {
         <div class="step-title" id="step-title"></div>
         <div class="step-body" id="step-body"></div>
         <div class="step-hint" id="step-hint" role="status"></div>
+        <div class="step-answer" id="step-answer" hidden><span class="answer-label">Answer &mdash; type these in the terminal, then press Check</span><pre><code id="answer-code"></code></pre></div>
         <div class="step-footer">
           <button class="btn link" id="back-btn">&larr; Back</button>
           <button class="btn link" id="skip-btn">Skip &rarr;</button>
+          <button class="btn link" id="answer-btn" hidden>Show answer</button>
           <span class="spacer"></span>
           <button class="btn primary" id="action-btn"></button>
         </div>

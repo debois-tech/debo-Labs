@@ -31,6 +31,7 @@
   api('/auth/me').then(function (r) {
     var user = r.body && r.body.user;
     loggedIn = !!user;
+    window.deboUser = user || null;
     if (slot) {
       if (user) {
         slot.innerHTML = '<span class="auth-who"></span><button type="button" class="auth-out">Log out</button>';

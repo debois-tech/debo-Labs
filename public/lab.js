@@ -130,6 +130,7 @@
     $('step-title').textContent = s.title;
     $('step-body').innerHTML = s.bodyHtml;          // server-rendered from escaped markdown
     setHint('', false);
+    showAnswerUi(s);
     var btn = $('action-btn');
     btn.disabled = false;
     btn.style.display = '';
@@ -162,13 +163,38 @@
         if (d.pass) { done[s.id] = true; render(); setHint(s.success || 'Correct. Step complete.', true); return; }
         btn.textContent = 'Not yet — try again';
         setHint(d.message || s.hint || '', false);
+        fails[s.id] = d.fails || 0;
+        answerAfter = d.answerAfter || answerAfter;
+        showAnswerUi(s);
       })
       .catch(function () { btn.disabled = false; btn.textContent = 'Error — retry'; });
   }
 
+  // After a few misses on one task the learner may reveal its answer (the server decides; it counts the failed checks).
+  var fails = {}, answers = {}, answerAfter = 3;
+  function showAnswerUi(s) {
+    var btn = $('answer-btn'), box = $('step-answer');
+    var eligible = s.type === 'task' && !done[s.id] && (fails[s.id] || 0) >= answerAfter;
+    btn.hidden = !eligible || !!answers[s.id];
+    box.hidden = !(eligible && answers[s.id]);
+    if (!box.hidden) $('answer-code').textContent = answers[s.id].join('\n');
+  }
+  $('answer-btn').onclick = function () {
+    var s = STEPS[current];
+    fetch(API + '/lab/answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token, stepId: s.id }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d.answer) { answers[s.id] = d.answer; showAnswerUi(s); } else setHint('The answer is not available yet — keep trying.', false); })
+      .catch(function () { setHint('Could not fetch the answer. Try again.', false); });
+  };
+
   function finish() {
     window.deboMarkDone(DATA.track + '/' + DATA.lab);
-    var html = '<p class="done-mark">Lab complete.</p><p>You finished <strong>' + esc(DATA.title) + '</strong>. Your progress is saved in this browser.</p>';
+    var tasks = STEPS.filter(function (st) { return st.task; });
+    var html = '<p class="done-mark">Congratulations!</p><p class="done-lede">You completed <strong>' + esc(DATA.title) + '</strong>.</p>' +
+      '<p class="done-sub">' + tasks.length + (tasks.length === 1 ? ' task' : ' tasks') + ' solved, each one checked against the real state of your terminal:</p>' +
+      '<ul class="done-list">' + tasks.map(function (t) { return '<li>' + esc(t.title) + '</li>'; }).join('') + '</ul>' +
+      '<p class="done-sub">' + (DATA.next ? 'Ready for the next one?' : 'That was the last lab in this track — nicely done.') + '</p>';
+    html += shareHtml(tasks.length);
     if (DATA.resources.length) {
       html += '<ul class="resource-list">' + DATA.resources.map(function (r) {
         return '<li><a href="' + r.url + '" target="_blank" rel="noopener noreferrer">' + esc(r.title) + '</a><span>' + esc(r.desc) + '</span></li>';
@@ -188,6 +214,75 @@
     $('action-btn').style.display = 'none';
     $('skip-btn').style.visibility = 'hidden';
     $('back-btn').style.visibility = 'hidden';
+    wireShare(tasks.length);
+  }
+
+  // --- share: a card to screenshot or download, and post text for LinkedIn -------------------------------------------
+  var TAGS = { 'linux-fundamentals': '#Linux #DevOps #SysAdmin', 'git-basics': '#Git #DevOps #VersionControl', aws: '#AWS #Cloud #DevOps', 'aws-cloud-practitioner': '#AWS #CloudPractitioner #Cloud', docker: '#Docker #Containers #DevOps', networking: '#Networking #DevOps #Linux', 'github-actions': '#GitHubActions #CICD #DevOps' };
+  function who() { return (window.deboUser && (window.deboUser.name || window.deboUser.email)) || ''; }
+  function today() { return new Date().toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' }); }
+  function shareUrl() { return location.origin + '/t/' + DATA.track; }
+  function postText(n) {
+    return 'I just completed "' + DATA.title + '" on Debo Labs: ' + n + (n === 1 ? ' hands-on task' : ' hands-on tasks') + ' in a real Linux terminal, each one graded on the actual state of the machine, not on multiple choice.\n\n' +
+      'Learning by doing beats watching tutorials. Try it: ' + shareUrl() + '\n\n' + (TAGS[DATA.track] || '#DevOps #Cloud #Linux') + ' #HandsOnLearning #DeboLabs';
+  }
+  function shareHtml(n) {
+    return '<div class="share"><div class="share-card" id="share-card"><div class="sc-top"><img src="/logo/debo-labs-logo.png" alt="" width="36" height="36" /><span>Debo <b>Labs</b></span></div>' +
+      '<div class="sc-kicker">Lab completed</div><div class="sc-title">' + esc(DATA.title) + '</div>' +
+      '<div class="sc-meta">' + n + (n === 1 ? ' task' : ' tasks') + ' solved &middot; graded on real terminal state</div>' +
+      '<div class="sc-foot"><span class="sc-name" id="sc-name"></span><span>' + esc(today()) + '</span></div></div>' +
+      '<div class="share-actions"><button class="btn primary" id="share-dl" type="button">Download image</button>' +
+      '<button class="btn" id="share-copy" type="button">Copy LinkedIn post</button>' +
+      '<a class="btn" id="share-li" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl()) + '">Share on LinkedIn</a></div>' +
+      '<p class="share-note">Download the image (or take a screenshot of the card), attach it to your post, and paste the copied text.</p></div>';
+  }
+  function wireShare(n) {
+    var nm = $('sc-name'); if (nm) nm.textContent = who();
+    $('share-copy').onclick = function () {
+      var t = postText(n), b = $('share-copy');
+      var ok = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy LinkedIn post'; }, 2000); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { window.prompt('Copy this text:', t); });
+      else window.prompt('Copy this text:', t);
+    };
+    $('share-dl').onclick = function () { drawCard(n); };
+  }
+  function drawCard(n) {
+    var W = 1200, H = 627, cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var g = cv.getContext('2d');
+    var bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#04100c'); bg.addColorStop(1, '#0a2a1e');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    var glow = g.createRadialGradient(W * .85, 0, 0, W * .85, 0, 620); glow.addColorStop(0, 'rgba(16,185,129,.28)'); glow.addColorStop(1, 'rgba(16,185,129,0)');
+    g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(160,255,210,.22)'; g.lineWidth = 2; g.strokeRect(40, 40, W - 80, H - 80);
+    function text(s, x, y, font, color, max) { g.font = font; g.fillStyle = color; g.fillText(s, x, y, max); }
+    function wrap(s, x, y, font, color, max, lh) {
+      g.font = font; g.fillStyle = color;
+      var words = s.split(' '), line = '', yy = y;
+      words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (g.measureText(t).width > max && line) { g.fillText(line, x, yy); line = w; yy += lh; } else line = t; });
+      g.fillText(line, x, yy); return yy;
+    }
+    var sans = 'Inter, "Helvetica Neue", Arial, sans-serif', disp = 'Sora, Inter, "Helvetica Neue", Arial, sans-serif';
+    var finish = function (logo) {
+      if (logo) g.drawImage(logo, 80, 76, 56, 56);
+      text('Debo Labs', logo ? 152 : 80, 116, '600 34px ' + disp, '#e9f5ef');
+      text('LAB COMPLETED', 80, 250, '600 24px ' + sans, '#34d399');
+      var last = wrap(DATA.title, 80, 322, '700 58px ' + disp, '#ffffff', W - 160, 70);
+      text(n + (n === 1 ? ' task' : ' tasks') + ' solved  \u00b7  graded on real terminal state', 80, last + 64, '400 28px ' + sans, '#8fa89c');
+      var grad = g.createLinearGradient(80, 0, 520, 0); grad.addColorStop(0, '#34d399'); grad.addColorStop(.55, '#2dd4bf'); grad.addColorStop(1, '#a3e635');
+      g.fillStyle = grad; g.fillRect(80, 470, 440, 5);
+      if (who()) text(who(), 80, 540, '600 32px ' + sans, '#e9f5ef', 600);
+      g.textAlign = 'right'; text(today(), W - 80, 540, '400 26px ' + sans, '#8fa89c'); g.textAlign = 'left';
+      cv.toBlob(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'debo-labs-' + DATA.lab + '.png';
+        document.body.appendChild(a); a.click(); a.remove();
+      }, 'image/png');
+    };
+    var img = new Image();
+    img.onload = function () { finish(img); };
+    img.onerror = function () { finish(null); };
+    img.src = '/logo/debo-labs-logo.png';
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -204,6 +299,7 @@
     if (!token) return;
     fetch(API + '/session/remaining?token=' + token).then(function (r) { return r.json(); }).then(function (d) {
       var t = d.remainingSec, el = $('lab-timer');
+      if (t === null) { el.style.display = 'none'; return; }          // this server has no session time limit
       $('lab-timer-text').textContent = t <= 0 ? '00:00' : String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       el.classList.toggle('is-low', t > 0 && t < 120);
     }).catch(function () { /* transient */ });

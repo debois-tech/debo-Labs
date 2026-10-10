@@ -1,0 +1,91 @@
+#!/usr/bin/env node
+// An offline practice version of the AWS CLI for the Debo Labs terminal. It mirrors command names, flags, JSON output and the
+// common error messages of the real CLI, but nothing leaves this machine: the "cloud" is a state file in your home directory.
+const fs = require('fs');
+const path = require('path');
+const core = require('./lib/core');
+const { AwsError, camel, parseArgv, parseParam, loadState, saveState, readIni, format, ACCOUNT, CONFIG_FILE, CREDS_FILE } = core;
+
+const SERVICES = {
+  configure: require('./lib/configure'), sts: require('./lib/sts'), iam: require('./lib/iam'), s3: require('./lib/s3'), s3api: require('./lib/s3api'),
+  ec2: require('./lib/ec2'), cloudwatch: require('./lib/cloudwatch'), sns: require('./lib/sns'), budgets: require('./lib/budgets'),
+  ce: require('./lib/ce'), support: require('./lib/support'),
+};
+const VERSION = 'aws-cli/2.17.0 Python/3.11.8 Linux/x86_64 (offline practice simulator)';
+const GLOBAL_SERVICES = new Set(['configure', 'sts', 'iam', 's3', 's3api', 'budgets', 'ce', 'support']);
+
+function usageError(msg) {
+  process.stderr.write(`usage: aws [options] <command> <subcommand> [<subcommand> ...] [parameters]\nTo see help text, you can run:\n\n  aws help\n  aws <command> help\n  aws <command> <subcommand> help\n\naws: error: ${msg}\n`);
+  process.exit(252);
+}
+
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv[0] === '--version' || argv[0] === 'version') { console.log(VERSION); return; }
+  const { pos, flags } = parseArgv(argv);
+  if (!pos.length || pos[0] === 'help') {
+    console.log('AWS(1) (offline practice simulator)\n\nUsage: aws <service> <operation> [options]\n\nServices: ' + Object.keys(SERVICES).join(', ') + '\nTry: aws s3 help, aws iam help');
+    return;
+  }
+  const [service, opRaw, ...rest] = pos;
+  const svc = SERVICES[service];
+  const op = opRaw || (svc && svc.defaultOp);
+  if (!svc) usageError(`argument command: Invalid choice, valid choices are:\n\n${Object.keys(SERVICES).join('\n')}`);
+  if (!op || op === 'help') {
+    console.log(`${service.toUpperCase()}\n\nAvailable operations:\n  ${Object.keys(svc.ops).join('\n  ')}`);
+    return;
+  }
+  const handler = svc.ops[op];
+  if (!handler) usageError(`argument operation: Invalid choice, valid choices are:\n\n${Object.keys(svc.ops).join('\n')}`);
+  if (flags.has('help') || rest[0] === 'help') { console.log(`${service} ${op}\n\n${(svc.help && svc.help[op]) || 'See the lessons in this lab for the options this practice simulator supports.'}`); return; }
+
+  // Credentials come first, as in the real CLI.
+  const creds = readIni(CREDS_FILE).default || {};
+  const hasCreds = service === 'configure' || (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) || (creds.aws_access_key_id && creds.aws_secret_access_key);
+  if (!hasCreds) { process.stderr.write('\nUnable to locate credentials. You can configure credentials by running "aws configure".\n'); process.exit(255); }
+
+  const config = readIni(CONFIG_FILE).default || {};
+  const flag = (n) => { const v = flags.get(n); return v === undefined ? undefined : (v[0] === true ? true : v[0]); };
+  const c = {
+    service, op, pos: rest, flags, account: ACCOUNT, state: loadState(), config, opName: (svc.opNames && svc.opNames[op]) || camel(op),
+    region: flag('region') || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || config.region || null,
+    flag, bool: (n) => flags.has(n) && flags.get(n)[0] !== 'false', has: (n) => flags.has(n),
+    list: (n) => (flags.get(n) || []).filter((x) => x !== true),
+    req(n) {
+      const v = flag(n);
+      if (v === undefined || v === true) usageError(`the following arguments are required: --${n}`);
+      return v;
+    },
+    param: (n) => { const v = flag(n); return v === undefined || v === true ? undefined : parseParam(v); },
+    paramList: (n) => c.list(n).map(parseParam).flat(),
+    reqParam(n) { c.req(n); return c.param(n); },
+    needRegion() {
+      if (!c.region) { process.stderr.write('\nYou must specify a region. You can also configure your region by running "aws configure".\n'); process.exit(253); }
+      return c.region;
+    },
+    out: (line) => process.stdout.write(line + '\n'),
+    fail: (code, msg, o) => { const e = new AwsError(code, msg, o); e.op = c.opName; throw e; },
+    id(prefix, len = 17) { c.state.counter += 1; return prefix + core.hex(`${c.state.counter}-${prefix}-${c.state.createdAt}`, len); },
+    save: () => saveState(c.state),
+  };
+  if (!GLOBAL_SERVICES.has(service)) c.needRegion();
+
+  const before = JSON.stringify(c.state);
+  const result = await handler(c);
+  if (JSON.stringify(c.state) !== before) saveState(c.state);
+  if (result !== undefined) {
+    const out = flag('output') || config.output || 'json';
+    const text = format(result, flag('query') && flag('query') !== true ? flag('query') : null, out);
+    if (text !== '') process.stdout.write(text + '\n');
+  }
+}
+
+main().catch((e) => {
+  if (e instanceof AwsError) {
+    if (e.exit === 252 || e.code === 'Error') process.stderr.write(`\n${e.message}\n`);
+    else process.stderr.write(`${e.prefix ? e.prefix + ' ' : '\n'}An error occurred (${e.code}) when calling the ${e.op || 'unknown'} operation: ${e.message}\n`);
+    process.exit(e.exit);
+  }
+  process.stderr.write(`aws simulator internal error: ${e && e.stack || e}\n`);
+  process.exit(255);
+});

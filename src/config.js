@@ -52,7 +52,8 @@ function loadConfig(env = process.env) {
     // classroom/campus NAT puts many real learners behind one address. 0 = unlimited.
     maxPerIp: isLocal ? 0 : intEnv(env, 'MAX_SESSIONS_PER_IP', 3),
     idleMs: intEnv(env, 'LAB_IDLE_MIN', isLocal ? 30 : 5) * 60 * 1000,
-    hardCapMs: intEnv(env, 'LAB_HARD_CAP_MIN', isLocal ? 120 : 15) * 60 * 1000,
+    // LAB_HARD_CAP_MIN=0 removes the overall session time limit (idle sessions are still closed by LAB_IDLE_MIN).
+    hardCapMs: env.LAB_HARD_CAP_MIN === '0' ? 0 : intEnv(env, 'LAB_HARD_CAP_MIN', isLocal ? 120 : 15) * 60 * 1000,
     // The page connects its terminal right after minting; a token that never does
     // must not hold a seat for long.
     connectDeadlineMs: 15 * 1000,

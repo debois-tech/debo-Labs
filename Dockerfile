@@ -22,9 +22,9 @@ RUN sed -i '\|path-exclude /usr/share/man/\*|d' /etc/dpkg/dpkg.cfg.d/docker \
  && apt-get install -y --no-install-recommends --reinstall \
       coreutils bash grep sed findutils gzip tar util-linux diffutils \
  && rm -rf /var/lib/apt/lists/* \
- # One user per concurrent session (lab0..lab39, uid 10000+): learners cannot read,
+ # One user per concurrent session (lab0..lab59, uid 10000+): learners cannot read,
  # signal or starve each other. Names (not bare numbers) so `ls -l` stays readable.
- && for i in $(seq 0 39); do groupadd -g $((10000+i)) lab$i && useradd -M -u $((10000+i)) -g $((10000+i)) -s /bin/bash lab$i; done
+ && for i in $(seq 0 59); do groupadd -g $((10000+i)) lab$i && useradd -M -u $((10000+i)) -g $((10000+i)) -s /bin/bash lab$i; done
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY package.json ./
@@ -32,6 +32,9 @@ COPY src ./src
 COPY public ./public
 COPY scripts ./scripts
 COPY labs ./labs
+# `aws`: an offline practice version of the AWS CLI for the cloud labs (no network, no account; see docs/aws-simulator.md)
+COPY tools/aws-sim /opt/aws-sim
+RUN chmod -R a+rX /opt/aws-sim && ln -s /opt/aws-sim/aws /usr/local/bin/aws
 # Check scripts must stay readable (they run as the learner); the answers must not.
 RUN find labs -type d -name solutions -exec chmod 700 {} +
 ENV PORT=8080 SANDBOX_DIR=/sandbox LAB_UID=10000 DATA_DIR=/data
